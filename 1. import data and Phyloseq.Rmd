@@ -1,7 +1,6 @@
 ---
 title: "Import data for Build Phyloseq-Tao Wen 2023"
 author: "Hendra"
-date: "2025-01-10"
 output: html_notebook
 ---
 
@@ -33,7 +32,7 @@ library(reshape2)  # Untuk melt dari reshape2
 library(data.table)  # Untuk melt dari data.table
 ```
 
-#-------------------------------------------PHYLOSEQ-ALL--------------------------------------------------#
+#---Input Data----#
 
 ```{r}
 otu = read.delim("D:/S3-KU/Rice seed analysis/Phyloseq/OTU table new.txt",row.names = 1)
@@ -60,23 +59,23 @@ rep = readDNAStringSet("D:/S3-KU/Rice seed analysis/Phyloseq/sequences data.fast
 ```{r}
 library(phyloseq)
 
-ps = phyloseq(sample_data(map),
+psseed = phyloseq(sample_data(map),
               otu_table(as.matrix(otu), taxa_are_rows=TRUE), 
               tax_table(as.matrix(tax)),
               phy_tree(tree),
               refseq(rep)
               )
-ps
+psseed
 ```
 
 ```{r}
 saveRDS(ps,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-all.rds")
 ```
 
-##---------------------------------------SUB-SET METADATA--------------------------------------
+#------SUB-SET METADATA-------#
 
 ```{r}
-psorigin <- subset_samples(ps,  Source == "Origin")
+psorigin <- subset_samples(psseed,  Source == "Origin")
 ```
 
 ```{r}
@@ -85,7 +84,7 @@ saveRDS(ps,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-origin.rds")
 
 
 ```{r}
-pscultur <- subset_samples(ps,  Source == "Culturable")
+pscultur <- subset_samples(psseed,  Source == "Culturable")
 ```
 
 ```{r}
@@ -93,30 +92,30 @@ saveRDS(ps,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-cultur.rds")
 ```
 
 
-#-----------------------------------KONVERSI KE ASV names-------------------------------#
+#--------Change to ASV conversion----------#
 
 ```{r}
-asv_names <- paste0("ASV_", seq(1:ntaxa(ps)))  # Buat nama baru
+asv_names <- paste0("ASV_", seq(1:ntaxa(psseed)))  # Make the new name
 ```
 
 ```{r}
-# Simpan nama lama OTU
-old_names <- taxa_names(ps)
+# Save the original OTU name
+old_names <- taxa_names(psseed)
 
-# Ganti nama di setiap komponen phyloseq
-taxa_names(ps) <- asv_names  # Ganti nama utama
+# Rename components in each phyloseq object
+taxa_names(psseed) <- asv_names  # Change name
 
-# Perbarui nama di setiap komponen phyloseq
-otu_table(ps) <- otu_table(ps)[asv_names, ]  # Pastikan urutannya benar
-tax_table(ps) <- tax_table(ps)[asv_names, ]
-phy_tree(ps) <- prune_taxa(asv_names, phy_tree(ps))  # Jika ada pohon
-refseq(ps) <- refseq(ps)[asv_names]
+# Rename all components in the phyloseq object
+otu_table(psseed) <- otu_table(psseed)[asv_names, ]  # Ensure correct order
+tax_table(psseed) <- tax_table(psseed)[asv_names, ]
+phy_tree(psseed) <- prune_taxa(asv_names, phy_tree(psseed))  # if have tree
+refseq(psseed) <- refseq(psseed)[asv_names]
 ```
 
 ```{r}
-new_refseq <- refseq(ps)  # Ambil refseq lama
-names(new_refseq) <- asv_names  # Ganti nama menjadi ASV
-new_refseq <- Biostrings::DNAStringSet(new_refseq)  # Konversi ulang agar sesuai format
+new_refseq <- refseq(psseed)  # pick old refseq 
+names(new_refseq) <- asv_names  # Change name to ASV
+new_refseq <- Biostrings::DNAStringSet(new_refseq)  # reset allign to format
 ```
 
 ```{r}
@@ -124,19 +123,19 @@ Biostrings::writeXStringSet(new_refseq, filepath = "new_refseq_output.fasta")
 ```
 
 ```{r}
-ps_asv <- phyloseq(
-  sample_data(ps),
-  otu_table(ps),
-  tax_table(ps),
-  phy_tree(ps),
-  new_refseq  # Masukkan refseq yang sudah diperbarui
+psseed_asv <- phyloseq(
+  sample_data(psseed),
+  otu_table(psseed),
+  tax_table(psseed),
+  phy_tree(psseed),
+  new_refseq  # Input the new refseq
 )
 
-ps_asv
+psseed_asv
 ```
 
 ```{r}
-all(taxa_names(ps_asv) == names(refseq(ps_asv)))  # Harus TRUE
+all(taxa_names(psseed_asv) == names(refseq(ps_asv)))  # Harus TRUE
 ```
 
 ```{r}
@@ -145,7 +144,7 @@ tax_table(ps_asv)
 
 
 ```{r}
-otu_table(ps_asv)
+otu_table(psseed_asv)
 ```
 
 
@@ -154,32 +153,21 @@ saveRDS(ps_asv,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-all.rds")
 ```
 
 ```{r}
-ps_asv_origin <- subset_samples(ps_asv,  Source == "Origin")
+psseed_asv_origin <- subset_samples(ps_asv,  Source == "Origin")
 ```
 
 ```{r}
-saveRDS(ps_asv_origin,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
+saveRDS(psseed_asv_origin,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
 ```
 
 ```{r}
-ps_asv_cultur <- subset_samples(ps_asv,  Source == "Culturable")
+psseed_asv_cultur <- subset_samples(psseed_asv,  Source == "Culturable")
 ```
 
 
 ```{r}
-saveRDS(ps_asv_cultur,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-cultur.rds")
+saveRDS(psseed_asv_cultur,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-cultur.rds")
 ```
-
-
-
-
-
-
-
-
-
-
-
 
 
 
