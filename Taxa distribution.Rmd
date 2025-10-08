@@ -1,0 +1,486 @@
+---
+title: "Taxa distribution"
+author: "Hendra"
+date: "2025-10-07"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##------Venn Diagram_Distribution-----------##
+
+```{r}
+library(ggplot2)
+library(grid)
+library(ggvenn)
+library(VennDiagram)
+library(eulerr)
+library(microbiome)
+library(tidyverse)
+library(tidyr)
+library(tibble)
+library(phyloseq)
+library(ggplot2)
+```
+
+
+
+```{r}
+psseed_origin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
+sample_data(psseed_origin)
+```
+
+```{r}
+otu_table(psseed_origin)
+```
+
+
+```{r}
+tax_table(psseed_origin)
+```
+
+```{r}
+tax_df <- as.data.frame(tax_table(psseed_origin))
+```
+
+```{r}
+library(openxlsx)
+# Buat file Excel dengan beberapa sheet
+write.xlsx(tax_df, "taxa_ASVdata.xlsx")
+```
+
+##----Sub-set variety sample-based------###
+
+
+```{r}
+Venpath = paste(otupath,"/Ven_Upset_super/",sep = "")
+  dir.create(Venpath)
+
+group = "Variety"
+path = path
+N = 0.01
+
+  
+  aa =  ggClusterNet::vegan_otu(psseed_origin)
+  otu_table = as.data.frame(t(aa))
+  count = aa
+  countA = count
+  
+  sub_design <- as.data.frame(phyloseq::sample_data(psseed_origin))
+  
+
+  #
+  # pick_val_num <- rep/2
+  count[count > 0] <- 1
+  count2 = as.data.frame(count )
+  aa = sub_design[,"Variety"]
+  colnames(aa) = "Vengroup"
+  
+  #-div group
+  iris.split <- split(count2,as.factor(aa$Vengroup))
+  
+  iris.apply <- lapply(iris.split,function(x)colSums(x[]))
+  
+  iris.combine <- do.call(rbind,iris.apply)
+  ven2 = t(iris.combine)
+  for (i in 1:length(unique(phyloseq::sample_data(psseed_origin)[,"Variety"]))) {
+    aa <- as.data.frame(table(phyloseq::sample_data(psseed_origin)[,"Variety"]))[i,1]
+    bb =  as.data.frame(table(phyloseq::sample_data(psseed_origin)[,"Variety"]))[i,2]
+    ven2[,aa] = ven2[,aa]/bb
+  }
+  ven2[ven2 < N]  = 0
+  ven2[ven2 >=N]  = 1
+  ven2 = as.data.frame(ven2)
+  #
+  ven_varietyasv = as.list(ven2)
+  
+  # ven_pick = get.venn.partitions(ven3)
+  
+  for (i in 1:ncol(ven2)) {
+    
+    
+    ven_varietyasv[[i]] <-  row.names(ven2[ven2[i] == 1,])
+    
+  }
+  
+  print(ven_varietyasv)
+```
+
+
+```{r}
+shared_asv = Reduce(intersect, ven_varietyasv)
+print("ASV shared across all varieties:")
+print(shared_asv)
+```
+
+```{r}
+var_n <- ncol(ven2)
+print(var_n)
+```
+
+
+```{r}
+# Normalize the selected ASVs by dividing their values by the number of groups (var_n)
+var_n <- 2
+
+# Convert list of ASV names to vector
+asv_names <- unlist(ven_varietyasv)
+
+# Ensure the ASV names exist as row names in ven2
+asv_names <- asv_names[asv_names %in% rownames(ven2)]
+
+# Normalize the selected ASVs
+ven2[asv_names, ] <- ven2[asv_names, , drop = FALSE] / var_n
+
+# Calculate relative abundance in percentage
+rel_abundance <- ven2 * 100
+
+```
+
+```{r}
+str(ven_varietyasv)
+```
+
+
+```{r}
+#VARIETY
+
+# Check if there are exactly two elements in the list
+if (length(names(ven_varietyasv)) == 2) {
+  
+  # Define output file name
+  filename <- "ven_varietybased.jpg"
+  
+  # Create a high-resolution JPEG file for saving the Venn diagram
+  jpeg(
+    filename,               # Output file name
+    width = 1000,           # Width in pixels
+    height = 1000,          # Height in pixels
+    res = 800               # Resolution (DPI)
+  )
+  
+  # Create the Venn diagram
+  venn_plot <- VennDiagram::venn.diagram(
+    ven_varietyasv,
+    filename = NULL,                     # Output to R graphics device
+    lwd = 1,                             # Circle line thickness
+    lty = 1,                             # Circle line type
+    fill = c("#A3C1AD", "#AFCDE7"),      # Circle fill colors
+    col = c("black", "black"),           # Circle border colors
+    cat.col = c("#0073C2FF", "yellow"),  # Category label colors
+    cat.cex = 0.3,                       # Category label size
+    rotation.degree = 0.1,               # Rotation degree
+    main = "",                           # Main title (none)
+    main.cex = 0.7,                      # Main title size
+    sub = "",                            # Subtitle (none)
+    sub.cex = 0.5,                       # Subtitle size
+    cex = 0.8,                           # Font size for numbers inside circles
+    fontface = "bold",                   # Font style
+    fontfamily = "Arial",                # Font family for labels
+    alpha = 0.6,                         # Transparency
+    cat.dist = c(0.5, 0.5),              # Distance between category labels
+    cat.pos = c(0, 0),                   # Position of category labels (angle)
+    reverse = TRUE,                      # Reverse circle order
+    scaled = FALSE                       # Keep circle size unscaled
+  )
+  
+  # Draw the Venn diagram on the graphic device
+  grid::grid.newpage()
+grid::grid.draw(venn_plot)
+dev.off()
+cat("✅ Venn diagram saved:", filename, "\n")
+  
+}
+
+
+```
+```{r}
+getwd()
+```
+
+```{r}
+display_venn(ven_varietyasv)
+```
+
+###------------Taxa Genus-based------------###
+
+```{r}
+# Load library
+library(phyloseq)
+library(dplyr)
+library(ggClusterNet)
+```
+
+
+```{r}
+# Glom genus level
+ps_genus <- tax_glom(psseed_origin, "Genus")
+
+print(ps_genus)
+
+```
+
+###===================================Venn Diagram_change to genus name =====================
+
+```{r}
+sum(is.na(tax_table(psseed_origin)[, "Genus"]))  # Cek jumlah ASV yang Genus-nya kosong
+```
+
+```{r}
+# Ensure all NA entries in the Genus level are repaced with "Unknown"
+tax_table(psseed_origin)[, "Genus"][is.na(tax_table(psseed_origin)[, "Genus"])] <- "Unknown"
+
+# Agglomerate to genus level
+pseed_genus <- tax_glom(ps, taxrank = "Genus", NArm = F)
+```
+
+```{r}
+# Check the number of taxa before and after agglomeration
+ntaxa(ps)      # NUmber of ASVs before tax_glom
+ntaxa(pseed_genus)  # NUmber of ASVs after tax_glom
+
+# Display the list of genera after agglomeration
+unique(tax_table(pseed_genus)[, "Genus"])
+```
+
+```{r}
+# Show the frequency of each genus
+table(tax_table(pseed_genus)[, "Genus"])
+```
+
+```{r}
+# Count how many NA values remain in the Genus column (if any)
+sum(is.na(tax_table(pseed_genus)[, "Genus"]))  # How many NA in the Genus level?
+```
+
+```{r}
+head(taxa_names(pseed_genus))
+```
+
+```{r}
+taxa_names(pseed_genus) <- make.unique(as.character(tax_table(pseed_genus)[, "Genus"]))
+```
+
+```{r}
+taxa_names(pseed_genus)
+```
+
+```{r}
+taxa
+```
+
+
+```{r}
+Venpath = paste(otupath,"/Ven_Upset_super/",sep = "")
+  dir.create(Venpath)
+
+group = "Variety"
+path = path
+N = 0.01
+
+  
+  aa =  ggClusterNet::vegan_otu(pseed_genus)
+  otu_table = as.data.frame(t(aa))
+  count = aa
+  countA = count
+  
+  sub_design <- as.data.frame(phyloseq::sample_data(pseed_genus))
+  
+
+  #
+  # pick_val_num <- rep/2
+  count[count > 0] <- 1
+  count2 = as.data.frame(count )
+  aa = sub_design[,"Variety"]
+  colnames(aa) = "Vengroup"
+  
+  #-div group
+  iris.split <- split(count2,as.factor(aa$Vengroup))
+  #数据分组计算平均值
+  iris.apply <- lapply(iris.split,function(x)colSums(x[]))
+  # 组合结果
+  iris.combine <- do.call(rbind,iris.apply)
+  ven2 = t(iris.combine)
+  for (i in 1:length(unique(phyloseq::sample_data(pseed_genus)[,"Variety"]))) {
+    aa <- as.data.frame(table(phyloseq::sample_data(pseed_genus)[,"Variety"]))[i,1]
+    bb =  as.data.frame(table(phyloseq::sample_data(pseed_genus)[,"Variety"]))[i,2]
+    ven2[,aa] = ven2[,aa]/bb
+  }
+  ven2[ven2 < N]  = 0
+  ven2[ven2 >=N]  = 1
+  ven2 = as.data.frame(ven2)
+  #
+  ven_variety = as.list(ven2)
+  
+  # ven_pick = get.venn.partitions(ven3)
+  
+  for (i in 1:ncol(ven2)) {
+    
+    
+    ven_variety[[i]] <-  row.names(ven2[ven2[i] == 1,])
+    
+  }
+  
+  print(ven_variety)
+```
+
+```{r}
+library(openxlsx)
+# Buat file Excel dengan beberapa sheet
+write.xlsx(ven_compartment, "Unik_Genus.xlsx")
+```
+
+```{r}
+str(ven_variety)
+```
+
+
+```{r}
+#VARIETY VISUALIZATION
+
+if (length(names(ven_variety)) == 2) {
+  filename <- "ven_varietybased1.jpg"
+    
+# Create the Venn diagram and save it with the desired size and resolution
+jpeg(
+  filename,              # File name
+  width = 1000,          # Width in pixels
+  height = 1000,         # Height in pixels
+  res = 800              # Resolution in DPI (dots per inch)
+)
+    a<- VennDiagram::venn.diagram(ven_variety,
+                    filename=NULL,
+                    lwd = 1,  # Line thickness of the circles
+        lty = 1,  # Line type of the circles
+        fill = c("#FBE7A1","#FBB4AE"),  # Fill colors of the circles
+        col = c("black","black"),  # # Border color of the circles
+        cat.col = c("#0073C2FF","yellow"),  # Colors of the category labels
+        cat.cex = 0.4,  # Text size of the category labels
+        #cat.dist = c(0.2, 0.28, 0.25),
+        rotation.degree = 0.1,  # Rotation degree of the diagram
+        main = "",  # No main title
+        main.cex = 0.7,  # Text size of the main title
+        sub = "",  # No subtitle
+        sub.cex = 0.5,  # Text size of subtitle
+        cex = 0.8,  # Text size of the numbers inside the circles
+        fontface = "bold",
+        fontfamily = "Arial",  # Font for the numbers inside the circles
+        alpha = 0.6,  # Transparancy level of the circles
+        catcat.dist = c(0.5, 0.5),     # ✅ TAdjusts the distance between category labell
+        cat.pos = c(-0, 0),   # Label position (in degrees from the circle center)
+        reverse = TRUE,
+        scaled = FALSE
+    )
+    # Draw the Venn diagram on the graphics device
+    grid::grid.draw(a)
+    
+    # Close the graphics device and save the output file
+    dev.off()
+
+}
+```
+
+
+##----Visualization each location----##
+
+```{r}
+if (length(names(ven_seed)) == 4) {
+    filename <- "ven_seed1.jpg"
+
+# Create the Venn diagram and save it with the desired size and resolution
+jpeg(
+  filename,              # File name
+  width = 1000,          # Width in pixels
+  height = 1000,         # Height in pixels
+  res = 800              # Resolution in DPI (dots per inch)
+)
+    b<- VennDiagram::venn.diagram(ven_seed,
+                    filename=NULL,
+                    lwd = 1,  # Ketebalan garis lingkaran
+        lty = 1,  # Tipe garis lingkaran
+        fill = c("lightgreen", "orange", "maroon", "#0073C2FF"),  # Warna pengisian lingkaran
+        col = c("black", "black", "black", "black"),  # Warna garis lingkaran
+        cat.col = c("lightgreen", "orange", "maroon", "#0073C2FF"),  # Warna label kategori
+        cat.cex = 1,  # Ukuran teks kategori
+        cat.fontface = "bold",
+        cat.fontfamily = "Arial",
+        cat.dist = c(0.38, 0.4, 0.25, 0.23),
+        rotation.degree = 0.1,  # Derajat rotasi
+        main = "",  # Judul utama kosong
+        main.cex = 0.5,  # Ukuran teks judul utama
+        sub = "",  # Subjudul kosong
+        sub.cex = 0.5,  # Ukuran teks subjudul
+        cex = 0.5,  # Ukuran teks angka dalam diagram Venn
+        fontface = "bold",
+        fontfamily = "Arial",  # Font for the numbers inside the circles
+        alpha = 0.5,  # Transparansi
+        reverse = TRUE,
+        scaled = FALSE
+    )
+    # Gambar diagram Venn di file PNG
+    grid::grid.draw(b)
+    
+    # Tutup file PNG dan simpan
+    dev.off()
+    }
+```
+
+```{r}
+# Save plot
+ggsave("Venn_seed2.png", plot = p, width = 8, height = 6, dpi = 800)
+```
+
+
+```{r}
+display_venn(ven_seed)
+```
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
