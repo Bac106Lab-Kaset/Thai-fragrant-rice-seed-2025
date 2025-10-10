@@ -1,0 +1,841 @@
+---
+title: "Bacterial composition"
+author: "Hendra"
+output: html_notebook
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(ggalluvial)
+library(eulerr)
+library(microbiome)
+library(tidyverse)
+library(tidyr)
+library(tibble)
+library(phyloseq)
+```
+
+###----Composition in rice seed origin sample-------###
+
+##-----------Field Location----------------##
+
+```{r}
+psorigin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
+sample_data(psorigin)
+```
+
+```{r}
+group  = "Block"
+j = "Genus"
+label = TRUE 
+sd = FALSE
+Top = 10
+tran = TRUE
+
+# axis_order = NA
+
+```
+
+```{r}
+# psdata = ps %>%
+  #   tax_glom(taxrank = j)
+  psdata <- ggClusterNet::tax_glom_wt(ps = psorigin,ranks = j)
+  
+  # transform to relative abundance
+  if (tran == TRUE) {
+    psdata = psdata%>%
+      phyloseq::transform_sample_counts(function(x) {x/sum(x)} )
+  }
+  
+  otu = phyloseq::otu_table(psdata)
+  tax = phyloseq::tax_table(psdata)
+  
+  for (i in 1:dim(tax)[1]) {
+    if (row.names(tax)[i] %in% names(sort(rowSums(otu), decreasing = TRUE)[1:Top])) {
+      
+      tax[i,j] =tax[i,j]
+    } else {
+      tax[i,j]= "Others"
+    }
+  }
+  phyloseq::tax_table(psdata)= tax
+  
+  Taxonomies <- psdata %>% # Transform to rel. abundance
+    phyloseq::psmelt()
+
+  Taxonomies$Abundance = Taxonomies$Abundance * 100
+  # Taxonomies$Abundance = Taxonomies$Abundance /rep
+  colnames(Taxonomies) <- gsub(j,"aa",colnames(Taxonomies))
+  data = c()
+  i = 2
+  for (i in 1:length(unique(phyloseq::sample_data(psorigin)$Block))) {
+    a <- as.data.frame(table(phyloseq::sample_data(psorigin)$Block))[i,1]
+
+    b =  as.data.frame(table(phyloseq::sample_data(psorigin)$Block))[i,2]
+
+    c <- Taxonomies %>% 
+      dplyr::filter(Block == a)
+    c$Abundance <- c$Abundance/b
+    data = data.frame(Sample =c$Sample,Abundance = c$Abundance,aa =c$aa,Block = c$Block)
+
+    if (i == 1) {
+      table = data
+    }
+    if (i != 1) {
+      table = rbind(table,data)
+    }
+
+  }
+
+  Taxonomies = table
+
+  #按照分组求均值
+
+  by_cyl <- dplyr::group_by(Taxonomies, aa,Block)
+
+  zhnagxu2 = dplyr::summarise(by_cyl, sum(Abundance), sd(Abundance))
+
+  iris_groups<- dplyr::group_by(Taxonomies, aa)
+  cc<- dplyr::summarise(iris_groups, sum(Abundance))
+  head(cc)
+```
+
+```{r}
+colnames(cc)= c("aa","allsum")
+  cc<- dplyr::arrange(cc, desc(allsum))
+  
+  ##使用这个属的因子对下面数据进行排序
+  head(zhnagxu2)
+```
+
+```{r}
+colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
+  zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
+
+  zhnagxu3 = zhnagxu2
+  
+  ##制作标签坐标，标签位于顶端
+ # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
+ # head(Taxonomies_x )
+  #标签位于中部
+ # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
+  Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
+  head( Taxonomies_x )
+```
+
+
+```{r}
+# Taxonomies_x$label_y =
+  Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
+
+  Taxonomies_x$label = Taxonomies_x$aa
+  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
+  # for(i in 1:nrow(Taxonomies_x)){
+  #   if(Taxonomies_x[i,3] > 3){
+  #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
+  #   }else{
+  #     Taxonomies_x[i,5] = NA
+  #   }
+  # }
+
+  Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
+  
+  ##普通柱状图
+  
+  p4 <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
+  geom_bar(stat = "identity", width = 0.8, color = "black") +
+  scale_fill_manual("Genera", values = colset3) +
+  scale_y_continuous(name = "Relative abundance (%)") +
+  guides(fill = guide_legend(title = j)) +
+  labs(
+    x = "",
+    y = "Relative abundance (%)",
+    title = ""
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.x = element_text(angle = 0, face = "bold", hjust = 0.5),
+    axis.title.x = element_text(face = "bold", color = "black", size = rel(1.2)),
+    axis.title.y = element_text(face = "bold"),
+    legend.text = element_text(face = "italic", size = 12),
+    legend.title = element_text(face = "bold"),
+    legend.key.size = unit(15, "pt"),
+    text = element_text(family = "Arial", face = "bold")
+  )
+p4
+
+```
+
+
+```{r}
+#colset2 <- c(
+  "Genus1"  = "#E69F00",  # Orange
+  "Genus2"  = "#56B4E9",  # Sky Blue
+  "Genus3"  = "#009E73",  # Bluish Green
+  "Genus4"  = "#F0E442",  # Yellow
+  "Genus5"  = "#0072B2",  # Blue
+  "Genus6"  = "#D55E00",  # Vermillion
+  "Genus7"  = "#CC79A7",  # Reddish Purple
+  "Genus8"  = "#999999",  # Grey
+  "Genus9"  = "#117733",  # Dark Green (Paul Tol)
+  "Genus10" = "#88CCEE",  # Light Blue (Paul Tol)
+  "Genus11" = "#332288"   # Indigo (Paul Tol)
+)
+
+```
+
+```{r}
+#---扩增子环境布置
+colset1 <- RColorBrewer::brewer.pal(9,"Set1")
+colset2 <- RColorBrewer::brewer.pal(12,"Paired")
+colset3 <- c(RColorBrewer::brewer.pal(11,"Set1"),RColorBrewer::brewer.pal(9,"Pastel1"))
+colset4 = colset3
+```
+
+```{r}
+barpath = paste(otupath,"/Microbial_composition/",sep = "")
+dir.create(barpath)
+
+
+p4a1 <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
+  geom_bar(stat = "identity", width = 0.8, color = "black") +
+  scale_fill_manual("Genera", values = colset2) +
+  scale_y_continuous(name = "Relative abundance (%)") +
+  guides(fill = guide_legend(title = j)) +
+  labs(x = "", y = "Relative abundance (%)", title = "") +
+  
+  # Menghapus background agar transparan
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "transparent", color = NA),  # 📌 Hapus background panel
+    plot.background = element_rect(fill = "transparent", color = NA),   # 📌 Hapus background plot
+    legend.position = "bottom",  # 📌 Legend di bawah
+    legend.text = element_text(face = "italic"),
+    legend.title = element_text(face = "bold"),
+    legend.key.size = unit(15, "pt"),
+    axis.text.x = element_text(angle = 0, face = "bold", hjust = .5),
+    axis.title.x = element_text(face = "bold", color = "black", size = rel(1.2)),
+    axis.title.y = element_text(face = "bold"),
+    text = element_text(family = "Arial")
+  )
+
+# Tampilkan plot
+p4a1
+
+
+```
+
+```{r}
+FileName2 <- paste(barpath,"/a2_",j,"_All block-new color",".jpg", sep = "")
+  ggsave(FileName2, p4a1, width = 15, height =8, dpi = 800 )
+```
+  
+
+
+
+##--------All group-merged----##
+
+```{r}
+group  = "Allgroup"
+j = "Genus"
+label = TRUE 
+sd = FALSE
+Top = 10
+tran = TRUE
+
+# axis_order = NA
+
+```
+
+```{r}
+# psdata = ps %>%
+  #   tax_glom(taxrank = j)
+  psdata <- ggClusterNet::tax_glom_wt(ps = psorigin,ranks = j)
+  
+  # transform to relative abundance
+  if (tran == TRUE) {
+    psdata = psdata%>%
+      phyloseq::transform_sample_counts(function(x) {x/sum(x)} )
+  }
+  
+  otu = phyloseq::otu_table(psdata)
+  tax = phyloseq::tax_table(psdata)
+  
+  for (i in 1:dim(tax)[1]) {
+    if (row.names(tax)[i] %in% names(sort(rowSums(otu), decreasing = TRUE)[1:Top])) {
+      
+      tax[i,j] =tax[i,j]
+    } else {
+      tax[i,j]= "Others"
+    }
+  }
+  phyloseq::tax_table(psdata)= tax
+  
+  Taxonomies <- psdata %>% # Transform to rel. abundance
+    phyloseq::psmelt()
+
+  Taxonomies$Abundance = Taxonomies$Abundance * 100
+  # Taxonomies$Abundance = Taxonomies$Abundance /rep
+  colnames(Taxonomies) <- gsub(j,"aa",colnames(Taxonomies))
+  data = c()
+  i = 2
+  for (i in 1:length(unique(phyloseq::sample_data(ps)$Allgroup))) {
+    a <- as.data.frame(table(phyloseq::sample_data(ps)$Allgroup))[i,1]
+
+    b =  as.data.frame(table(phyloseq::sample_data(ps)$Allgroup))[i,2]
+
+    c <- Taxonomies %>% 
+      dplyr::filter(Allgroup == a)
+    c$Abundance <- c$Abundance/b
+    data = data.frame(Sample =c$Sample,Abundance = c$Abundance,aa =c$aa,Allgroup = c$Allgroup)
+
+    if (i == 1) {
+      table = data
+    }
+    if (i != 1) {
+      table = rbind(table,data)
+    }
+
+  }
+
+  Taxonomies = table
+
+  #按照分组求均值
+
+  by_cyl <- dplyr::group_by(Taxonomies, aa,Allgroup)
+
+  zhnagxu2 = dplyr::summarise(by_cyl, sum(Abundance), sd(Abundance))
+
+  iris_groups<- dplyr::group_by(Taxonomies, aa)
+  cc<- dplyr::summarise(iris_groups, sum(Abundance))
+  head(cc)
+```
+
+```{r}
+colnames(cc)= c("aa","allsum")
+  cc<- dplyr::arrange(cc, desc(allsum))
+  
+  ##使用这个属的因子对下面数据进行排序
+  head(zhnagxu2)
+```
+
+```{r}
+colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
+  zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
+
+  zhnagxu3 = zhnagxu2
+  
+  ##制作标签坐标，标签位于顶端
+  # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
+  # head(Taxonomies_x )
+  #标签位于中部
+  # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
+  Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
+  head( Taxonomies_x )
+```
+
+```{r}
+# Taxonomies_x$label_y =
+  Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
+
+  Taxonomies_x$label = Taxonomies_x$aa
+  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
+  # for(i in 1:nrow(Taxonomies_x)){
+  #   if(Taxonomies_x[i,3] > 3){
+  #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
+  #   }else{
+  #     Taxonomies_x[i,5] = NA
+  #   }
+  # }
+
+  Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
+  
+  ##普通柱状图
+  
+  p4_1 <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
+  geom_bar(stat = "identity", width = 0.8, color = "black") +
+  scale_fill_manual("Genera", values = colset3) +
+  scale_y_continuous(name = "Relative abundance (%)") +
+  guides(fill = guide_legend(title = j)) +
+  labs(x = "", y = "Relative abundance (%)", title = "") +
+  
+  # Menghapus background agar transparan
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "transparent", color = NA),  # 📌 Hapus background panel
+    plot.background = element_rect(fill = "transparent", color = NA),   # 📌 Hapus background plot
+    legend.position = "bottom",  # 📌 Legend di bawah
+    legend.text = element_text(face = "italic"),
+    legend.title = element_text(face = "bold"),
+    legend.key.size = unit(15, "pt"),
+    axis.text.x = element_text(angle = 0, face = "bold", hjust = .5),
+    axis.title.x = element_text(face = "bold", color = "black", size = rel(1.2)),
+    axis.title.y = element_text(face = "bold"),
+    text = element_text(family = "Arial")
+  )
+
+# Tampilkan plot
+p4_1
+```
+
+```{r}
+FileName2 <- paste(barpath,"/a2_",j,"_All group",".jpg", sep = "")
+  ggsave(FileName2, p4_1, width = 10, height =8, dpi = 600 )
+```
+  
+###------Bacterial Composition in Culturable Sample----------###
+
+##-------Inner Compartment-------------##
+
+```{r}
+pscultur = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-cultur.rds")
+sample_data(pscultur)
+```
+
+```{r}
+psinn <- subset_samples(pscultur,  Compartment == "Inner")
+```
+
+```{r}
+group  = "Allgroup"
+j = "Genus"
+label = TRUE 
+sd = FALSE
+Top = 10
+tran = TRUE
+
+# axis_order = NA
+
+```
+
+```{r}
+# psdata = ps %>%
+  #   tax_glom(taxrank = j)
+  psdata <- ggClusterNet::tax_glom_wt(ps = psinn,ranks = j)
+  
+  # transform to relative abundance
+  if (tran == TRUE) {
+    psdata = psdata%>%
+      phyloseq::transform_sample_counts(function(x) {x/sum(x)} )
+  }
+  
+  otu = phyloseq::otu_table(psdata)
+  tax = phyloseq::tax_table(psdata)
+  
+  for (i in 1:dim(tax)[1]) {
+    if (row.names(tax)[i] %in% names(sort(rowSums(otu), decreasing = TRUE)[1:Top])) {
+      
+      tax[i,j] =tax[i,j]
+    } else {
+      tax[i,j]= "Others"
+    }
+  }
+  phyloseq::tax_table(psdata)= tax
+  
+  Taxonomies <- psdata %>% # Transform to rel. abundance
+    phyloseq::psmelt()
+
+  Taxonomies$Abundance = Taxonomies$Abundance * 100
+  # Taxonomies$Abundance = Taxonomies$Abundance /rep
+  colnames(Taxonomies) <- gsub(j,"aa",colnames(Taxonomies))
+  data = c()
+  i = 2
+  for (i in 1:length(unique(phyloseq::sample_data(psinn)$Allgroup))) {
+    a <- as.data.frame(table(phyloseq::sample_data(psinn)$Allgroup))[i,1]
+
+    b =  as.data.frame(table(phyloseq::sample_data(psinn)$Allgroup))[i,2]
+
+    c <- Taxonomies %>% 
+      dplyr::filter(Allgroup == a)
+    c$Abundance <- c$Abundance/b
+    data = data.frame(Sample =c$Sample,Abundance = c$Abundance,aa =c$aa,Allgroup = c$Allgroup)
+
+    if (i == 1) {
+      table = data
+    }
+    if (i != 1) {
+      table = rbind(table,data)
+    }
+
+  }
+
+  Taxonomies = table
+
+  #按照分组求均值
+
+  by_cyl <- dplyr::group_by(Taxonomies, aa,Allgroup)
+
+  zhnagxu2 = dplyr::summarise(by_cyl, sum(Abundance), sd(Abundance))
+
+  iris_groups<- dplyr::group_by(Taxonomies, aa)
+  cc<- dplyr::summarise(iris_groups, sum(Abundance))
+  head(cc)
+```
+
+```{r}
+colnames(cc)= c("aa","allsum")
+  cc<- dplyr::arrange(cc, desc(allsum))
+  
+  ##使用这个属的因子对下面数据进行排序
+  head(zhnagxu2)
+```
+
+```{r}
+colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
+  zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
+
+  zhnagxu3 = zhnagxu2
+  
+  ##制作标签坐标，标签位于顶端
+  # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
+  # head(Taxonomies_x )
+  #标签位于中部
+  # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
+  Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
+  head( Taxonomies_x )
+```
+
+```{r}
+# Taxonomies_x$label_y =
+  Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
+
+  Taxonomies_x$label = Taxonomies_x$aa
+  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
+  # for(i in 1:nrow(Taxonomies_x)){
+  #   if(Taxonomies_x[i,3] > 3){
+  #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
+  #   }else{
+  #     Taxonomies_x[i,5] = NA
+  #   }
+  # }
+
+  Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
+  
+```
+
+
+```{r}
+barpath = paste(otupath,"/Microbial_composition/",sep = "")
+dir.create(barpath)
+
+
+p5a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
+  geom_bar(stat = "identity", width = 0.5, color = "black") +
+  scale_fill_manual("Genera", values = colset2) +
+  scale_y_continuous(name = "Relative abundance (%)") +
+  guides(fill = guide_legend(title = j)) +
+  labs(x = "", y = "Relative abundance (%)", title = "") +
+  
+  # Menghapus background agar transparan
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "transparent", color = NA),  # 📌 Hapus background panel
+    plot.background = element_rect(fill = "transparent", color = NA),   # 📌 Hapus background plot
+    legend.position = "bottom",  # 📌 Legend di bawah
+    legend.text = element_text(face = "italic"),
+    legend.title = element_text(face = "bold"),
+    legend.key.size = unit(15, "pt"),
+    axis.text.x = element_text(angle = 0, face = "bold", hjust = .5),
+    axis.title.x = element_text(face = "bold", color = "black", size = rel(1.2)),
+    axis.title.y = element_text(face = "bold"),
+    text = element_text(family = "Arial")
+  )
+
+# Tampilkan plot
+p5a
+```
+
+```{r}
+FileName2 <- paste(barpath,"/a2_",j,"_All block-new color-inner",".jpg", sep = "")
+  ggsave(FileName2, p5a, width = 10, height =8, dpi = 800 )
+```
+
+
+```{r}
+p5a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
+  geom_bar(stat = "identity", width = 0.5, color = "black") +
+  scale_fill_manual("Genera", values = colset3) +
+  scale_y_continuous(name = "Relative abundance (%)") +
+  guides(fill = guide_legend(title = j)) +
+  labs(x = "", y = "Relative abundance (%)", title = "") +
+  
+  # Menghapus background agar transparan
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "transparent", color = NA),  # 📌 Hapus background panel
+    plot.background = element_rect(fill = "transparent", color = NA),   # 📌 Hapus background plot
+    legend.position = "bottom",  # 📌 Legend di bawah
+    legend.text = element_text(face = "italic"),
+    legend.title = element_text(face = "bold"),
+    legend.key.size = unit(15, "pt"),
+    axis.text.x = element_text(angle = 0, face = "bold", hjust = .5),
+    axis.title.x = element_text(face = "bold", color = "black", size = rel(1.2)),
+    axis.title.y = element_text(face = "bold"),
+    text = element_text(family = "Arial")
+  )
+
+# Tampilkan plot
+p5a
+```
+
+```{r}
+FileName2 <- paste(barpath,"/a2_",j,"_Inner1",".jpg", sep = "")
+  ggsave(FileName2, p5a, width = 10, height =8, dpi = 800 )
+```
+
+
+
+##---------OUTER COMPARTMENT-----------##
+
+```{r}
+psout <- subset_samples(pscultur,  Compartment == "Outer")
+```
+
+```{r}
+group  = "Allgroup"
+j = "Genus"
+label = TRUE 
+sd = FALSE
+Top = 10
+tran = TRUE
+
+# axis_order = NA
+
+```
+
+```{r}
+# psdata = ps %>%
+  #   tax_glom(taxrank = j)
+  psdata <- ggClusterNet::tax_glom_wt(ps = psout,ranks = j)
+  
+  # transform to relative abundance
+  if (tran == TRUE) {
+    psdata = psdata%>%
+      phyloseq::transform_sample_counts(function(x) {x/sum(x)} )
+  }
+  
+  otu = phyloseq::otu_table(psdata)
+  tax = phyloseq::tax_table(psdata)
+  
+  for (i in 1:dim(tax)[1]) {
+    if (row.names(tax)[i] %in% names(sort(rowSums(otu), decreasing = TRUE)[1:Top])) {
+      
+      tax[i,j] =tax[i,j]
+    } else {
+      tax[i,j]= "Others"
+    }
+  }
+  phyloseq::tax_table(psdata)= tax
+  
+  Taxonomies <- psdata %>% # Transform to rel. abundance
+    phyloseq::psmelt()
+
+  Taxonomies$Abundance = Taxonomies$Abundance * 100
+  # Taxonomies$Abundance = Taxonomies$Abundance /rep
+  colnames(Taxonomies) <- gsub(j,"aa",colnames(Taxonomies))
+  data = c()
+  i = 2
+  for (i in 1:length(unique(phyloseq::sample_data(psout)$Allgroup))) {
+    a <- as.data.frame(table(phyloseq::sample_data(psout)$Allgroup))[i,1]
+
+    b =  as.data.frame(table(phyloseq::sample_data(psout)$Allgroup))[i,2]
+
+    c <- Taxonomies %>% 
+      dplyr::filter(Allgroup == a)
+    c$Abundance <- c$Abundance/b
+    data = data.frame(Sample =c$Sample,Abundance = c$Abundance,aa =c$aa,Allgroup = c$Allgroup)
+
+    if (i == 1) {
+      table = data
+    }
+    if (i != 1) {
+      table = rbind(table,data)
+    }
+
+  }
+
+  Taxonomies = table
+
+  #按照分组求均值
+
+  by_cyl <- dplyr::group_by(Taxonomies, aa,Allgroup)
+
+  zhnagxu2 = dplyr::summarise(by_cyl, sum(Abundance), sd(Abundance))
+
+  iris_groups<- dplyr::group_by(Taxonomies, aa)
+  cc<- dplyr::summarise(iris_groups, sum(Abundance))
+  head(cc)
+```
+
+```{r}
+colnames(cc)= c("aa","allsum")
+  cc<- dplyr::arrange(cc, desc(allsum))
+  
+  ##使用这个属的因子对下面数据进行排序
+  head(zhnagxu2)
+```
+
+```{r}
+colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
+  zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
+
+  zhnagxu3 = zhnagxu2
+  
+  ##制作标签坐标，标签位于顶端
+  # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
+  # head(Taxonomies_x )
+  #标签位于中部
+  # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
+  Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
+  head( Taxonomies_x )
+```
+
+```{r}
+# Taxonomies_x$label_y =
+  Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
+
+  Taxonomies_x$label = Taxonomies_x$aa
+  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
+  # for(i in 1:nrow(Taxonomies_x)){
+  #   if(Taxonomies_x[i,3] > 3){
+  #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
+  #   }else{
+  #     Taxonomies_x[i,5] = NA
+  #   }
+  # }
+
+  Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
+  
+```
+
+```{r}
+barpath = paste(otupath,"/Microbial_composition/",sep = "")
+dir.create(barpath)
+
+
+p6a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
+  geom_bar(stat = "identity", width = 0.5, color = "black") +
+  scale_fill_manual("Genera", values = colset2) +
+  scale_y_continuous(name = "Relative abundance (%)") +
+  guides(fill = guide_legend(title = j)) +
+  labs(x = "", y = "Relative abundance (%)", title = "") +
+  
+  # Menghapus background agar transparan
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "transparent", color = NA),  # 📌 Hapus background panel
+    plot.background = element_rect(fill = "transparent", color = NA),   # 📌 Hapus background plot
+    legend.position = "bottom",  # 📌 Legend di bawah
+    legend.text = element_text(face = "italic"),
+    legend.title = element_text(face = "bold"),
+    legend.key.size = unit(15, "pt"),
+    axis.text.x = element_text(angle = 0, face = "bold", hjust = .5),
+    axis.title.x = element_text(face = "bold", color = "black", size = rel(1.2)),
+    axis.title.y = element_text(face = "bold"),
+    text = element_text(family = "Arial")
+  )
+
+# Tampilkan plot
+p6a
+```
+
+
+```{r}
+FileName2 <- paste(barpath,"/a2_",j,"_All block-new color-outer",".jpg", sep = "")
+  ggsave(FileName2, p6a, width = 10, height =8, dpi = 800 )
+```
+
+
+
+```{r}
+p6a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
+  geom_bar(stat = "identity", width = 0.5, color = "black") +
+  scale_fill_manual("Genera", values = colset3) +
+  scale_y_continuous(name = "Relative abundance (%)") +
+  guides(fill = guide_legend(title = j)) +
+  labs(x = "", y = "Relative abundance (%)", title = "") +
+  
+  # Menghapus background agar transparan
+  theme_classic() +
+  theme(
+    panel.background = element_rect(fill = "transparent", color = NA),  # 📌 Hapus background panel
+    plot.background = element_rect(fill = "transparent", color = NA),   # 📌 Hapus background plot
+    legend.position = "bottom",  # 📌 Legend di bawah
+    legend.text = element_text(face = "italic"),
+    legend.title = element_text(face = "bold"),
+    legend.key.size = unit(15, "pt"),
+    axis.text.x = element_text(angle = 0, face = "bold", hjust = .5),
+    axis.title.x = element_text(face = "bold", color = "black", size = rel(1.2)),
+    axis.title.y = element_text(face = "bold"),
+    text = element_text(family = "Arial")
+  )
+
+# Tampilkan plot
+p6a
+```
+
+```{r}
+FileName2 <- paste(barpath,"/a2_",j,"_Outer1",".jpg", sep = "")
+  ggsave(FileName2, p6a, width = 10, height =8, dpi = 800 )
+```
+
+
+
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
