@@ -8,7 +8,6 @@ output: html_notebook
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ```{r}
 # install.packages("BiocManager")
 library(BiocManager)
@@ -47,7 +46,6 @@ head(map)
 head(tax)
 ```
 
-
 ```{r}
 library(ggtree)
 tree  = read_tree("D:/S3-KU/Rice seed analysis/Phyloseq/Phylogenetic tree new.nwk")
@@ -82,7 +80,6 @@ psorigin <- subset_samples(psseed,  Source == "Origin")
 saveRDS(ps,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-origin.rds")
 ```
 
-
 ```{r}
 pscultur <- subset_samples(psseed,  Source == "Culturable")
 ```
@@ -90,7 +87,6 @@ pscultur <- subset_samples(psseed,  Source == "Culturable")
 ```{r}
 saveRDS(ps,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-cultur.rds")
 ```
-
 
 #--------Change to ASV conversion----------#
 
@@ -142,11 +138,9 @@ all(taxa_names(psseed_asv) == names(refseq(ps_asv)))  # Harus TRUE
 tax_table(ps_asv)
 ```
 
-
 ```{r}
 otu_table(psseed_asv)
 ```
-
 
 ```{r}
 saveRDS(ps_asv,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-all.rds")
@@ -164,9 +158,7 @@ saveRDS(psseed_asv_origin,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv
 psseed_asv_cultur <- subset_samples(psseed_asv,  Source == "Culturable")
 ```
 
-
 ```{r}
 saveRDS(psseed_asv_cultur,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-cultur.rds")
 ```
-
 
