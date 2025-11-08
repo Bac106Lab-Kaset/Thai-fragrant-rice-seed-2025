@@ -1,14 +1,7 @@
 ---
 title: "Bacterial diversity analysis"
 author: "Hendra"
-date: "2025-10-08"
-output: html_document
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 
 ```{r}
 library(ggClusterNet)
@@ -23,12 +16,9 @@ library(ggplot2)
 
 # 1. Alpha Diversity
 
-```{r}
 psseed_origin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
 sample_data(psseed_origin)
-```
 
-```{r}
 
 index = c("Shannon","Inv_Simpson","Pielou_evenness","Simpson_evenness" ,"Richness" ,"Chao1","ACE" )
 
@@ -46,13 +36,11 @@ x = t(count)
 
 Shannon = vegan::diversity(x)
 Shannon
-
       
 Inv_Simpson <- vegan::diversity(x, index = "invsimpson")
 Inv_Simpson
 
 S <- vegan::specnumber(x);S
-
 
 S2 = rowSums(x>0)
 Pielou_evenness <- Shannon/log(S)
@@ -78,9 +66,7 @@ sel = c(match("Inv_Simpson",colnames(index)),
 n = length(sel) + 3
 data = cbind(data.frame(ID = 1:length(index$Allgroup),group = index$Allgroup),index[sel])
 head(data)
-```
 
-```{r}
 result = EasyStat::MuiKwWlx2(data = data,num = c(3:(n -1)))
 result1 = EasyStat::FacetMuiPlotresultBox(data = data,num = c(3:(n -1)),
                                           result = result,
@@ -89,19 +75,16 @@ result1 = EasyStat::FacetMuiPlotresultBox(data = data,num = c(3:(n -1)),
 p1_1 = result1[[1]] +
   ggplot2::guides(fill = guide_legend(title = NULL))
 p1_1
-```
-
+-----------------------------------------------------------------------------------------
 
 #---------Another ggplot----#
 
-
-```{r}
 alppath = paste(otupath,"/alpha/",sep = "")
 dir.create(alppath)
 
-#---------多种指标alpha多样性分析加出图-标记显著性
+#---------
   group = "Group"
-# 设定排序顺序
+# 
 axis_order =  phyloseq::sample_data(ps)$Allgroup %>%unique();axis_order
 #> [1] "Group1" "Group2" "Group3"
 
@@ -128,18 +111,18 @@ axis_order =  phyloseq::sample_data(ps)$Allgroup %>%unique();axis_order
 
   alpha=vegan::diversity(count, "shannon")
   
-  x = t(count) ##转置，行为样本，列为OTU
+  x = t(count) 
   # head(x)
 
-  Shannon = vegan::diversity(x)  ##默认为shannon
+  Shannon = vegan::diversity(x)  ##shannon
   Shannon
 
   Inv_Simpson <- vegan::diversity(x, index = "invsimpson")
   Inv_Simpson
 
-  
-  #计算OTU数量
-  S <- vegan::specnumber(x);S  ##每个样本物种数。等价于S2 = rowSums(x>0)
+
+  #OTU
+  S <- vegan::specnumber(x);S  ##。S2 = rowSums(x>0)
 
   S2 = rowSums(x>0)
   
@@ -155,11 +138,10 @@ axis_order =  phyloseq::sample_data(ps)$Allgroup %>%unique();axis_order
                  Richness, Chao1,ACE) 
   head(report)
 
-  
   alp = merge(mapping,report , by="row.names",all=F)
 
 index = c("Shannon","Inv_Simpson","Pielou_evenness","Simpson_evenness" ,"Richness" ,"Chao1","ACE" )
-#--多种组合alpha分析和差异分析出图
+#--
 index= alp
 # head(index)
 
@@ -174,14 +156,12 @@ mytheme1 <- theme(
 )
 
 
-
-#--提取三个代表指标作图
+#--
 sel = c(match("Shannon",colnames(index)),match("Inv_Simpson",colnames(index)),match("Chao1",colnames(index)),match("Pielou_evenness",colnames(index)),match("ACE",colnames(index)))
 data = cbind(data.frame(ID = 1:length(index$Allgroup),group = index$Allgroup),index[sel])
 # head(data)
 
 result = EasyStat::MuiaovMcomper2(data = data,num = c(3:5))
-
 
 result1 = EasyStat::FacetMuiPlotresultBox(data = data,num = c(3:5),
                                 result = result,
@@ -192,10 +172,8 @@ p1_1 = result1[[1]] +
   ggplot2::guides(fill = guide_legend(title = NULL)) +
   ggplot2::scale_fill_manual(values = colset3)
 p1_1
-```
 
 
-```{r}
 p1_1 = result1[[1]] +
     ggplot2::scale_x_discrete(limits = axis_order) + 
   mytheme1 +
@@ -224,18 +202,14 @@ p1_1 = result1[[1]] +
   )
 
 p1_1
-```
 
-
-```{r}
+#save
 FileName <- paste(alppath,"Alpha-all sample3", ".png", sep = "")
 ggsave(FileName, p1_1, width = 8, height =7,dpi = 800)
-```
+------------------------------------------------------------------------------------
 
 
-
-```{r}
-#如何升级展示-提取数据用小提琴图展示
+#
 p1_1 = result1[[2]] %>% ggplot(aes(x = group , y = dd )) + 
   geom_violin(alpha = 1, aes(fill = group)) +
   geom_jitter(aes(color = group), position = position_jitter(0.19), size = 4, alpha = 0.5) +
@@ -270,36 +244,26 @@ p1_1 = result1[[2]] %>% ggplot(aes(x = group , y = dd )) +
 
 p1_1
 
-```
-
-```{r}
+#save
 FileName <- paste(alppath,"Alpha-all sample2", ".png", sep = "")
 ggsave(FileName, p1_1, width = 8, height =7,dpi = 800)
-```
 
 
-
-```{r}
 res = EasyStat::FacetMuiPlotresultBar(data = data,num = c(3:5),result = result,sig_show ="abc",ncol = 3)
 p1_2 = res[[1]]+ scale_x_discrete(limits = axis_order) + guides(color = FALSE) +
   mytheme1+ 
   guides(fill = guide_legend(title = NULL))+
   scale_fill_manual(values = colset1)
 p1_2
-```
 
 
-```{r}
 res = EasyStat::FacetMuiPlotReBoxBar(data = data,num = c(3:5),result = result,sig_show ="abc",ncol = 3)
 p1_3 = res[[1]]+ scale_x_discrete(limits = axis_order) + 
   mytheme1 + 
   guides(fill = guide_legend(title = NULL))+
   scale_fill_manual(values = colset1)
 p1_3
-```
 
-
-```{r}
 #FileName <- paste(alppath,"Alpha_Facet_box", ".pdf", sep = "")
 #ggsave(FileName, p1_1, width = ((1 + gnum) * 3), height =4,limitsize = FALSE)
 
@@ -317,12 +281,9 @@ ggsave(FileName, p1_2, width = ((1 + gnum) * 3), height = 4,limitsize = FALSE)
 
 FileName <- paste(alppath,"Alpha_Facet_boxbar", ".jpg", sep = "")
 ggsave(FileName, p1_3, width = ((1 + gnum) * 3), height = 4,limitsize = FALSE)
-```
+---------------------------------------------------------------------------------------------
 
-
-
-```{r}
-#--总体差异检测alpha多样性
+#--
 krusk1 = ggpubr::compare_means( Shannon ~ group, data=data, method = "kruskal.test")
 krusk2 = ggpubr::compare_means( Richness ~ group, data=data, method = "kruskal.test")
 krusk3 = ggpubr::compare_means( Pielou_evenness ~ group, data=data, method = "kruskal.test")
@@ -330,12 +291,9 @@ krusk3 = ggpubr::compare_means( Pielou_evenness ~ group, data=data, method = "kr
 dat = rbind(krusk1,krusk2,krusk3) %>% as.data.frame()
 FileName <- paste(alppath,"/alpha_diversity_index_all_p_Kruskal-Wallis.csv", sep = "")
 write.csv(dat,FileName,sep = "")
-```
-
+--------------------------------------------------------------------------------
 
 # 2. Beta Diversity
-
-
 
 ```{r}
 library(ggClusterNet)
@@ -345,18 +303,11 @@ library(jeevanuDB)
 ```
 
 
-```{r}
 psseed_origin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/Phy16s-riceseed-origin.rds")
 sample_data(psseed_origin)
-```
 
-
-```{r}
 psorigin <- subset_samples(ps,  Source == "Origin")
-```
 
-
-```{r}
 betapath = paste(otupath,"/beta/",sep = "")
 dir.create(betapath)
 
@@ -367,32 +318,21 @@ Micromet = "adonis"
 pvalue.cutoff = 0.05
 pair=TRUE
 
-# 求取相对丰度#----
+# ----
 ps1_rela = phyloseq::transform_sample_counts(psorigin, function(x) x / sum(x) )
-```
-```{r}
+
 # Check phyloseq data
 class(ps1_rela)
 str(ps1_rela)
 
-```
-
-```{r}
 # Manual check of data type
 is_dist <- inherits(unif, "dist")
 print(is_dist)
-```
 
-
-```{r}
 # An example of a commonly used distance method
 dist <- "bray"  # atau "jaccard"
 unif <- phyloseq::distance(ps1_rela, method = dist, type = "samples")
 
-```
-
-
-```{r}
 # Check whether the distance result is a valid object
 # Check the class
 class(unif)          # Should return "dist"
@@ -403,66 +343,56 @@ str(unif)            # View internal structure
 # Verify if it's a valid distance matrix
 inherits(unif, "dist")   # TRUE if it's a distance object, FALSE otherwise
 
-```
-
-
-```{r}
-# 排序方法选择#----
-#---------如果选用DCA排序
+# ----
+#---------
 if (method == "DCA") {
   # method = "DCA"
   ordi = phyloseq::ordinate(ps1_rela, method=method, distance=dist)
-  #提取样本坐标
+  #
   points = ordi$rproj[,1:2]
   colnames(points) = c("x", "y") #命名行名
-  #提取特征值
+  #
   eig = ordi$evals^2
 }
-```
 
-
-```{r}
-#---------CCA排序#----
+#---------CCA----
 if (method == "CCA") {
   # method = "CCA"
   ordi = phyloseq::ordinate(ps1_rela, method=method, distance=dist)
-  #样本坐标,这里可选u或者v矩阵
+  #
   points = ordi$CA$v[,1:2]
-  colnames(points) = c("x", "y") #命名行名
-  #提取特征值
+  colnames(points) = c("x", "y") #
+  #
   eig = ordi$CA$eig^2
 }
 ```
 
-
 ```{r}
-#---------RDA排序#----
+#---------RDA----
 if (method == "RDA") {
   # method ="RDA"
   ordi = phyloseq::ordinate(ps1_rela, method=method, distance=dist)
-  #样本坐标,这里可选u或者v矩阵
+
   points = ordi$CA$v[,1:2]
-  colnames(points) = c("x", "y") #命名行名
-  #提取特征值
+  colnames(points) = c("x", "y") #
+  
   eig = ordi$CA$eig
 }
 
-#---------DPCoA排序#----
-# 不用做了，不选择这种方法了，这种方法运行太慢了
+#---------DPCoA----
 
-#---------MDS排序#----
+#---------MDS----
 if (method == "MDS") {
   # method = "MDS"
   # ordi = ordinate(ps1_rela, method=ord_meths[i], distance=dist)
   ordi = phyloseq::ordinate(ps1_rela, method=method, distance=dist)
-  #样本坐标
+  #
   points = ordi$vectors[,1:2]
-  colnames(points) = c("x", "y") #命名行名
-  #提取解释度
+  colnames(points) = c("x", "y") #
+  #
   eig = ordi$values[,1]
 }
 ```
-
 
 ```{r}
 if (method == "PCoA") {
@@ -484,8 +414,6 @@ if (method == "PCoA") {
   # Save the eigenvalues
   eig = pcoa$eig
 }
-
-
 ```
 
 
@@ -514,27 +442,27 @@ str(y)  # Check structure of y
 ```
 
 ```{r}
-#----PCA分析#----
+#----PCA----
 
 otu_table = as.data.frame(t(ggClusterNet::vegan_otu(ps1_rela )))
 # head(otu_table)
 # method = "PCA"
 if (method == "PCA") {
   otu.pca = stats::prcomp(t(otu_table), scale.default = TRUE)
-  #提取坐标
+  #
   points = otu.pca$x[,1:2]
-  colnames(points) = c("x", "y") #命名行名
-  # #提取荷载坐标
+  colnames(points) = c("x", "y") #
+  # 
   # otu.pca$rotation
-  # 提取解释度,这里提供的并不是特征值而是标准差，需要求其平方才是特征值
+  # 
   eig=otu.pca$sdev
   eig=eig*eig
 }
 
 # method = "LDA"
-#---------------LDA排序#----
+#---------------LDA----
 if (method == "LDA") {
-  #拟合模型
+  #
   # library(MASS)
   data = t(otu_table)
   # head(data)
@@ -546,33 +474,32 @@ if (method == "LDA") {
   map = as.data.frame(sample_data(ps1_rela))
   model = MASS::lda(data, map$Group)
 
-  # 提取坐标
+  #------
   ord_in = model
   axes = c(1:2)
   points = data.frame(predict(ord_in)$x[, axes])
-  colnames(points) = c("x", "y") #命名行名
-  # 提取解释度
+  colnames(points) = c("x", "y") #
+  #-----
   eig= ord_in$svd^2
 }
 
-#---------------NMDS排序#----
+#---------------NMDS----
 # method = "NMDS"
 
 if (method == "NMDS") {
-  #---------如果选用NMDS排序
+  #---------
   # i = 5
   # dist = "bray"
   ordi = phyloseq::ordinate(ps1_rela, method=method, distance=dist)
   #样本坐标,
   points = ordi$points[,1:2]
-  colnames(points) = c("x", "y") #命名行名
-  #提取stress
+  colnames(points) = c("x", "y") #
+  #stress
   stress = ordi$stress
   stress= paste("stress",":",round(stress,2),sep = "")
 }
 
-
-#---------------t-sne排序#----
+#---------------t-sne----
 # method = "t-sne"
 if (method == "t-sne") {
   data = t(otu_table)
@@ -591,17 +518,14 @@ if (method == "t-sne") {
 
   tsne = Rtsne::Rtsne(data,perplexity = 3)
 
-  # 提取坐标
+  #
   points = as.data.frame(tsne$Y)
   row.names(points) =  row.names(map)
   colnames(points) = c("x", "y") #命名行名
   stress= NULL
 }
 
-
-#----差异分析#----
-
-#----整体差异分析#----
+#--------
 g = sample_data(psorigin)$Allgroup %>% unique() %>% length()
 n = sample_data(psorigin)$Allgroup%>% length()
 o = n/g
@@ -629,7 +553,7 @@ if (Micromet == "adonis") {
 
 ```{r}
 if (F) {
-  #----两两比较#----
+  #--------
   pairResult = pairMicroTest(ps = ps1_rela, Micromet = Micromet, dist = dist)
   
 } else {
@@ -637,7 +561,7 @@ if (F) {
 }
 
 
-#----绘图#----
+#--------
 map = as.data.frame(phyloseq::sample_data(ps1_rela))
 map$Allgroup = as.factor(map$Allgroup)
 colbar = length(levels(map$Allgroup))
@@ -659,7 +583,6 @@ if (method %in% c("DCA", "CCA", "RDA",  "MDS", "PCoA","PCA","LDA")) {
   p3
 }
 ```
-
 
 ```{r}
 if (method %in% c("DCA", "CCA", "RDA", "MDS", "PCoA", "PCA", "LDA")) {
@@ -690,17 +613,13 @@ if (method %in% c("DCA", "CCA", "RDA", "MDS", "PCoA", "PCA", "LDA")) {
 p3 = p2 + ggrepel::geom_text_repel(aes(label = points$ID), family = "Arial", size = 4)
 p3
 }
-```
 
-
-```{r}
+#save
   FileName1 <- paste(betapath,"/a2_",method,"beta-sample2.png", sep = "")
   ggsave(FileName1 , p3, width = 7, height = 6, dpi = 800)
-  
-```
+  ---------------------------------------------------------------------------------------------
 
 
-```{r}
 if (method %in% c("DCA", "CCA", "RDA", "MDS", "PCoA", "PCA", "LDA")) {
   p2 = ggplot(points, aes(x = x, y = y, fill = Allgroup)) +
     geom_point(alpha = .7, size = 5, pch = 21) +
@@ -722,10 +641,6 @@ if (method %in% c("DCA", "CCA", "RDA", "MDS", "PCoA", "PCA", "LDA")) {
   # Plot tanpa label sampel
   p2
 }
-
-```
-
-```{r}
 
 mytheme1 = ggplot2::theme_bw() + ggplot2::theme(
   panel.background=  ggplot2::element_blank(),
@@ -762,15 +677,13 @@ mytheme2 = ggplot2::theme_bw() + ggplot2::theme(
 )
 
 
-
-#---扩增子环境布置
+#---
 colset1 <- RColorBrewer::brewer.pal(9,"Set1")
 colset2 <- RColorBrewer::brewer.pal(12,"Paired")
 colset3 <- c(RColorBrewer::brewer.pal(11,"Set1"),RColorBrewer::brewer.pal(9,"Pastel1"))
 colset4 = colset3
 
 ```
-
 
 ```{r}
 if (method %in% c("NMDS")) {
@@ -790,8 +703,6 @@ if (method %in% c("NMDS")) {
   }
   eig = NULL
 }
-```
-
 
 ```{r}
 if (method %in% c("t-sne")) {
@@ -811,9 +722,6 @@ if (method %in% c("t-sne")) {
   eig = NULL
 }
 
-
-
-
   p3_1 = p2 + 
     scale_fill_manual(values = colset1)+
     scale_color_manual(values = colset1,guide = F) +
@@ -821,10 +729,9 @@ if (method %in% c("t-sne")) {
     theme(legend.position = c(0.8,0.15))
   p3_1
 
-```
 
 ```{r}
- #带标签图形出图
+ #
   p3_2 = p3 +
     scale_fill_manual(values = colset1)+
     scale_color_manual(values = colset1,guide = F) + 
@@ -833,35 +740,6 @@ if (method %in% c("t-sne")) {
   p3_2
 ```
 
-
-```{r}
+#save
   FileName1 <- paste(betapath,"/a2_",method,"beta-sample.png", sep = "")
   ggsave(FileName1 , p3_2, width = 10, height = 8, dpi = 600)
-```
-
-
-
-
-
-
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
