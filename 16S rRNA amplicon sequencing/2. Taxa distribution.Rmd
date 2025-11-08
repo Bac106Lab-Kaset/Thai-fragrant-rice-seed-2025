@@ -27,34 +27,23 @@ library(ggplot2)
 
 
 
-```{r}
 psseed_origin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
 sample_data(psseed_origin)
-```
 
-```{r}
+
 otu_table(psseed_origin)
-```
 
-
-```{r}
 tax_table(psseed_origin)
-```
 
-```{r}
 tax_df <- as.data.frame(tax_table(psseed_origin))
-```
 
-```{r}
 library(openxlsx)
 # Buat file Excel dengan beberapa sheet
 write.xlsx(tax_df, "taxa_ASVdata.xlsx")
-```
+
 
 ##----Sub-set variety sample-based------###
 
-
-```{r}
 Venpath = paste(otupath,"/Ven_Upset_super/",sep = "")
   dir.create(Venpath)
 
@@ -70,8 +59,6 @@ N = 0.01
   
   sub_design <- as.data.frame(phyloseq::sample_data(psseed_origin))
   
-
-  #
   # pick_val_num <- rep/2
   count[count > 0] <- 1
   count2 = as.data.frame(count )
@@ -106,22 +93,15 @@ N = 0.01
   }
   
   print(ven_varietyasv)
-```
 
 
-```{r}
 shared_asv = Reduce(intersect, ven_varietyasv)
 print("ASV shared across all varieties:")
 print(shared_asv)
-```
 
-```{r}
 var_n <- ncol(ven2)
 print(var_n)
-```
 
-
-```{r}
 # Normalize the selected ASVs by dividing their values by the number of groups (var_n)
 var_n <- 2
 
@@ -137,15 +117,10 @@ ven2[asv_names, ] <- ven2[asv_names, , drop = FALSE] / var_n
 # Calculate relative abundance in percentage
 rel_abundance <- ven2 * 100
 
-```
 
-```{r}
 str(ven_varietyasv)
-```
 
-
-```{r}
-#VARIETY
+#VARIETY-Based
 
 # Check if there are exactly two elements in the list
 if (length(names(ven_varietyasv)) == 2) {
@@ -195,84 +170,56 @@ cat("✅ Venn diagram saved:", filename, "\n")
 }
 
 
-```
-```{r}
 getwd()
-```
 
-```{r}
 display_venn(ven_varietyasv)
-```
+
 
 ###------------Taxa Genus-based------------###
 
-```{r}
 # Load library
 library(phyloseq)
 library(dplyr)
 library(ggClusterNet)
-```
 
-
-```{r}
 # Glom genus level
 ps_genus <- tax_glom(psseed_origin, "Genus")
 
 print(ps_genus)
 
-```
 
-###===================================Venn Diagram_change to genus name =====================
+###=========Venn Diagram_change to genus name ========###
 
-```{r}
+
 sum(is.na(tax_table(psseed_origin)[, "Genus"]))  # Cek jumlah ASV yang Genus-nya kosong
-```
 
-```{r}
 # Ensure all NA entries in the Genus level are repaced with "Unknown"
 tax_table(psseed_origin)[, "Genus"][is.na(tax_table(psseed_origin)[, "Genus"])] <- "Unknown"
 
 # Agglomerate to genus level
 pseed_genus <- tax_glom(ps, taxrank = "Genus", NArm = F)
-```
 
-```{r}
 # Check the number of taxa before and after agglomeration
 ntaxa(ps)      # NUmber of ASVs before tax_glom
 ntaxa(pseed_genus)  # NUmber of ASVs after tax_glom
 
 # Display the list of genera after agglomeration
 unique(tax_table(pseed_genus)[, "Genus"])
-```
 
-```{r}
 # Show the frequency of each genus
 table(tax_table(pseed_genus)[, "Genus"])
-```
 
-```{r}
 # Count how many NA values remain in the Genus column (if any)
 sum(is.na(tax_table(pseed_genus)[, "Genus"]))  # How many NA in the Genus level?
-```
 
-```{r}
 head(taxa_names(pseed_genus))
-```
 
-```{r}
 taxa_names(pseed_genus) <- make.unique(as.character(tax_table(pseed_genus)[, "Genus"]))
-```
 
-```{r}
 taxa_names(pseed_genus)
-```
 
-```{r}
 taxa
-```
 
-
-```{r}
 Venpath = paste(otupath,"/Ven_Upset_super/",sep = "")
   dir.create(Venpath)
 
@@ -289,7 +236,6 @@ N = 0.01
   sub_design <- as.data.frame(phyloseq::sample_data(pseed_genus))
   
 
-  #
   # pick_val_num <- rep/2
   count[count > 0] <- 1
   count2 = as.data.frame(count )
@@ -324,20 +270,13 @@ N = 0.01
   }
   
   print(ven_variety)
-```
 
-```{r}
 library(openxlsx)
 # Buat file Excel dengan beberapa sheet
 write.xlsx(ven_compartment, "Unik_Genus.xlsx")
-```
 
-```{r}
 str(ven_variety)
-```
 
-
-```{r}
 #VARIETY VISUALIZATION
 
 if (length(names(ven_variety)) == 2) {
@@ -380,12 +319,10 @@ jpeg(
     dev.off()
 
 }
-```
 
 
 ##----Visualization each location----##
 
-```{r}
 if (length(names(ven_seed)) == 4) {
     filename <- "ven_seed1.jpg"
 
@@ -425,62 +362,10 @@ jpeg(
     # Tutup file PNG dan simpan
     dev.off()
     }
-```
 
-```{r}
 # Save plot
 ggsave("Venn_seed2.png", plot = p, width = 8, height = 6, dpi = 800)
-```
 
-
-```{r}
 display_venn(ven_seed)
-```
-
-
-
 
 ## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
