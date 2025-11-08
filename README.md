@@ -1,6 +1,6 @@
-# Profiling of Seed-Associated Bacterial Communities in Thai Fragrant Rice Cultivars Using a Combined 16S rDNA Gene Amplicon Sequencing and Targeted PCR Detection
+# Association of Bacterial Leaf Blight with Seed-Associated Bacterial Communities in Thai Fragrant Rice Revealed by Combined Amplicon Sequencing and Targeted Detection
 
-# Hendra (2025)
+# Hendra, H. _et al_., 2025
 
 
 # Thai-fragrant-rice-seed-microbiome
