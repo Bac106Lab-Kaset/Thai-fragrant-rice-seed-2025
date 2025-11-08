@@ -66,9 +66,7 @@ tran = TRUE
   i = 2
   for (i in 1:length(unique(phyloseq::sample_data(psorigin)$Block))) {
     a <- as.data.frame(table(phyloseq::sample_data(psorigin)$Block))[i,1]
-
     b =  as.data.frame(table(phyloseq::sample_data(psorigin)$Block))[i,2]
-
     c <- Taxonomies %>% 
       dplyr::filter(Block == a)
     c$Abundance <- c$Abundance/b
@@ -250,9 +248,7 @@ tran = TRUE
   i = 2
   for (i in 1:length(unique(phyloseq::sample_data(ps)$Allgroup))) {
     a <- as.data.frame(table(phyloseq::sample_data(ps)$Allgroup))[i,1]
-
     b =  as.data.frame(table(phyloseq::sample_data(ps)$Allgroup))[i,2]
-
     c <- Taxonomies %>% 
       dplyr::filter(Allgroup == a)
     c$Abundance <- c$Abundance/b
@@ -282,9 +278,8 @@ colnames(cc)= c("aa","allsum")
   
   ##----
   head(zhnagxu2)
-```
 
-```{r}
+
 colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
 
@@ -398,9 +393,7 @@ tran = TRUE
   i = 2
   for (i in 1:length(unique(phyloseq::sample_data(psinn)$Allgroup))) {
     a <- as.data.frame(table(phyloseq::sample_data(psinn)$Allgroup))[i,1]
-
     b =  as.data.frame(table(phyloseq::sample_data(psinn)$Allgroup))[i,2]
-
     c <- Taxonomies %>% 
       dplyr::filter(Allgroup == a)
     c$Abundance <- c$Abundance/b
@@ -445,9 +438,7 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
   Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
   head( Taxonomies_x )
-```
 
-```{r}
 # Taxonomies_x$label_y =
   Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
 
@@ -575,9 +566,7 @@ tran = TRUE
   i = 2
   for (i in 1:length(unique(phyloseq::sample_data(psout)$Allgroup))) {
     a <- as.data.frame(table(phyloseq::sample_data(psout)$Allgroup))[i,1]
-
     b =  as.data.frame(table(phyloseq::sample_data(psout)$Allgroup))[i,2]
-
     c <- Taxonomies %>% 
       dplyr::filter(Allgroup == a)
     c$Abundance <- c$Abundance/b
@@ -696,3 +685,4 @@ p6a
 #Save
 FileName2 <- paste(barpath,"/a2_",j,"_Outer1",".jpg", sep = "")
   ggsave(FileName2, p6a, width = 10, height =8, dpi = 800 )
+
