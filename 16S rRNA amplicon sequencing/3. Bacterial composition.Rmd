@@ -1,13 +1,8 @@
 ---
 title: "Bacterial composition"
 author: "Hendra"
-output: html_notebook
 ---
 
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 
 ```{r}
@@ -24,12 +19,10 @@ library(phyloseq)
 
 ##-----------Field Location----------------##
 
-```{r}
+
 psorigin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
 sample_data(psorigin)
-```
 
-```{r}
 group  = "Block"
 j = "Genus"
 label = TRUE 
@@ -39,9 +32,7 @@ tran = TRUE
 
 # axis_order = NA
 
-```
 
-```{r}
 # psdata = ps %>%
   #   tax_glom(taxrank = j)
   psdata <- ggClusterNet::tax_glom_wt(ps = psorigin,ranks = j)
@@ -94,8 +85,6 @@ tran = TRUE
 
   Taxonomies = table
 
-  #按照分组求均值
-
   by_cyl <- dplyr::group_by(Taxonomies, aa,Block)
 
   zhnagxu2 = dplyr::summarise(by_cyl, sum(Abundance), sd(Abundance))
@@ -103,38 +92,29 @@ tran = TRUE
   iris_groups<- dplyr::group_by(Taxonomies, aa)
   cc<- dplyr::summarise(iris_groups, sum(Abundance))
   head(cc)
-```
 
-```{r}
 colnames(cc)= c("aa","allsum")
   cc<- dplyr::arrange(cc, desc(allsum))
   
-  ##使用这个属的因子对下面数据进行排序
+  ##
   head(zhnagxu2)
-```
 
-```{r}
 colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
 
   zhnagxu3 = zhnagxu2
   
-  ##制作标签坐标，标签位于顶端
  # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
  # head(Taxonomies_x )
-  #标签位于中部
+
  # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
   Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
   head( Taxonomies_x )
-```
 
-
-```{r}
 # Taxonomies_x$label_y =
   Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
 
   Taxonomies_x$label = Taxonomies_x$aa
-  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
   # for(i in 1:nrow(Taxonomies_x)){
   #   if(Taxonomies_x[i,3] > 3){
   #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
@@ -145,7 +125,6 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
 
   Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
   
-  ##普通柱状图
   
   p4 <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
   geom_bar(stat = "identity", width = 0.8, color = "black") +
@@ -169,10 +148,7 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   )
 p4
 
-```
 
-
-```{r}
 #colset2 <- c(
   "Genus1"  = "#E69F00",  # Orange
   "Genus2"  = "#56B4E9",  # Sky Blue
@@ -187,17 +163,13 @@ p4
   "Genus11" = "#332288"   # Indigo (Paul Tol)
 )
 
-```
 
-```{r}
-#---扩增子环境布置
+#---
 colset1 <- RColorBrewer::brewer.pal(9,"Set1")
 colset2 <- RColorBrewer::brewer.pal(12,"Paired")
 colset3 <- c(RColorBrewer::brewer.pal(11,"Set1"),RColorBrewer::brewer.pal(9,"Pastel1"))
 colset4 = colset3
-```
 
-```{r}
 barpath = paste(otupath,"/Microbial_composition/",sep = "")
 dir.create(barpath)
 
@@ -227,20 +199,15 @@ p4a1 <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa
 # Tampilkan plot
 p4a1
 
+#Save
 
-```
-
-```{r}
 FileName2 <- paste(barpath,"/a2_",j,"_All block-new color",".jpg", sep = "")
   ggsave(FileName2, p4a1, width = 15, height =8, dpi = 800 )
-```
-  
-
 
 
 ##--------All group-merged----##
 
-```{r}
+
 group  = "Allgroup"
 j = "Genus"
 label = TRUE 
@@ -250,9 +217,6 @@ tran = TRUE
 
 # axis_order = NA
 
-```
-
-```{r}
 # psdata = ps %>%
   #   tax_glom(taxrank = j)
   psdata <- ggClusterNet::tax_glom_wt(ps = psorigin,ranks = j)
@@ -305,8 +269,6 @@ tran = TRUE
 
   Taxonomies = table
 
-  #按照分组求均值
-
   by_cyl <- dplyr::group_by(Taxonomies, aa,Allgroup)
 
   zhnagxu2 = dplyr::summarise(by_cyl, sum(Abundance), sd(Abundance))
@@ -314,13 +276,11 @@ tran = TRUE
   iris_groups<- dplyr::group_by(Taxonomies, aa)
   cc<- dplyr::summarise(iris_groups, sum(Abundance))
   head(cc)
-```
 
-```{r}
 colnames(cc)= c("aa","allsum")
   cc<- dplyr::arrange(cc, desc(allsum))
   
-  ##使用这个属的因子对下面数据进行排序
+  ##----
   head(zhnagxu2)
 ```
 
@@ -330,21 +290,19 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
 
   zhnagxu3 = zhnagxu2
   
-  ##制作标签坐标，标签位于顶端
+  ##-----
   # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
   # head(Taxonomies_x )
-  #标签位于中部
+
   # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
   Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
   head( Taxonomies_x )
-```
 
-```{r}
 # Taxonomies_x$label_y =
   Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
 
   Taxonomies_x$label = Taxonomies_x$aa
-  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
+  # -------
   # for(i in 1:nrow(Taxonomies_x)){
   #   if(Taxonomies_x[i,3] > 3){
   #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
@@ -355,7 +313,7 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
 
   Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
   
-  ##普通柱状图
+  ##-----
   
   p4_1 <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
   geom_bar(stat = "identity", width = 0.8, color = "black") +
@@ -381,9 +339,8 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
 
 # Tampilkan plot
 p4_1
-```
 
-```{r}
+#Save
 FileName2 <- paste(barpath,"/a2_",j,"_All group",".jpg", sep = "")
   ggsave(FileName2, p4_1, width = 10, height =8, dpi = 600 )
 ```
@@ -392,16 +349,12 @@ FileName2 <- paste(barpath,"/a2_",j,"_All group",".jpg", sep = "")
 
 ##-------Inner Compartment-------------##
 
-```{r}
+
 pscultur = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-cultur.rds")
 sample_data(pscultur)
-```
 
-```{r}
 psinn <- subset_samples(pscultur,  Compartment == "Inner")
-```
 
-```{r}
 group  = "Allgroup"
 j = "Genus"
 label = TRUE 
@@ -411,9 +364,7 @@ tran = TRUE
 
 # axis_order = NA
 
-```
 
-```{r}
 # psdata = ps %>%
   #   tax_glom(taxrank = j)
   psdata <- ggClusterNet::tax_glom_wt(ps = psinn,ranks = j)
@@ -466,7 +417,7 @@ tran = TRUE
 
   Taxonomies = table
 
-  #按照分组求均值
+  #
 
   by_cyl <- dplyr::group_by(Taxonomies, aa,Allgroup)
 
@@ -475,26 +426,22 @@ tran = TRUE
   iris_groups<- dplyr::group_by(Taxonomies, aa)
   cc<- dplyr::summarise(iris_groups, sum(Abundance))
   head(cc)
-```
 
-```{r}
 colnames(cc)= c("aa","allsum")
   cc<- dplyr::arrange(cc, desc(allsum))
   
-  ##使用这个属的因子对下面数据进行排序
+  ##
   head(zhnagxu2)
-```
 
-```{r}
 colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
 
   zhnagxu3 = zhnagxu2
   
-  ##制作标签坐标，标签位于顶端
+
   # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
   # head(Taxonomies_x )
-  #标签位于中部
+
   # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
   Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
   head( Taxonomies_x )
@@ -505,7 +452,7 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
 
   Taxonomies_x$label = Taxonomies_x$aa
-  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
+  #---------------
   # for(i in 1:nrow(Taxonomies_x)){
   #   if(Taxonomies_x[i,3] > 3){
   #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
@@ -516,10 +463,7 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
 
   Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
   
-```
-
-
-```{r}
+-------------------------------------------------------------------------------------------------------------------
 barpath = paste(otupath,"/Microbial_composition/",sep = "")
 dir.create(barpath)
 
@@ -548,15 +492,12 @@ p5a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)
 
 # Tampilkan plot
 p5a
-```
 
-```{r}
+#Save
 FileName2 <- paste(barpath,"/a2_",j,"_All block-new color-inner",".jpg", sep = "")
   ggsave(FileName2, p5a, width = 10, height =8, dpi = 800 )
-```
 
-
-```{r}
+--------------------------------------------------------------------------------------------
 p5a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
   geom_bar(stat = "identity", width = 0.5, color = "black") +
   scale_fill_manual("Genera", values = colset3) +
@@ -581,22 +522,16 @@ p5a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)
 
 # Tampilkan plot
 p5a
-```
 
-```{r}
+#Save
 FileName2 <- paste(barpath,"/a2_",j,"_Inner1",".jpg", sep = "")
   ggsave(FileName2, p5a, width = 10, height =8, dpi = 800 )
-```
-
 
 
 ##---------OUTER COMPARTMENT-----------##
 
-```{r}
 psout <- subset_samples(pscultur,  Compartment == "Outer")
-```
 
-```{r}
 group  = "Allgroup"
 j = "Genus"
 label = TRUE 
@@ -606,9 +541,7 @@ tran = TRUE
 
 # axis_order = NA
 
-```
 
-```{r}
 # psdata = ps %>%
   #   tax_glom(taxrank = j)
   psdata <- ggClusterNet::tax_glom_wt(ps = psout,ranks = j)
@@ -661,8 +594,6 @@ tran = TRUE
 
   Taxonomies = table
 
-  #按照分组求均值
-
   by_cyl <- dplyr::group_by(Taxonomies, aa,Allgroup)
 
   zhnagxu2 = dplyr::summarise(by_cyl, sum(Abundance), sd(Abundance))
@@ -670,37 +601,29 @@ tran = TRUE
   iris_groups<- dplyr::group_by(Taxonomies, aa)
   cc<- dplyr::summarise(iris_groups, sum(Abundance))
   head(cc)
-```
 
-```{r}
 colnames(cc)= c("aa","allsum")
   cc<- dplyr::arrange(cc, desc(allsum))
   
-  ##使用这个属的因子对下面数据进行排序
   head(zhnagxu2)
-```
 
-```{r}
 colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
 
   zhnagxu3 = zhnagxu2
-  
-  ##制作标签坐标，标签位于顶端
+
   # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
   # head(Taxonomies_x )
-  #标签位于中部
+  #
   # Taxonomies_x1 = ddply(zhnagxu3,"group", transform, label_y = cumsum(Abundance) - 0.5*Abundance)
   Taxonomies_x = plyr::ddply(zhnagxu3,"group", summarize,label_sd = cumsum(Abundance),label_y = cumsum(Abundance) - 0.5*Abundance)
   head( Taxonomies_x )
-```
 
-```{r}
 # Taxonomies_x$label_y =
   Taxonomies_x = cbind(as.data.frame(zhnagxu3),as.data.frame(Taxonomies_x)[,-1])
 
   Taxonomies_x$label = Taxonomies_x$aa
-  # #使用循环将堆叠柱状图柱子比较窄的别写标签，仅仅宽柱子写上标签
+  #------
   # for(i in 1:nrow(Taxonomies_x)){
   #   if(Taxonomies_x[i,3] > 3){
   #     Taxonomies_x[i,5] = Taxonomies_x[i,5]
@@ -711,13 +634,10 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
 
   Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
   
-```
-
-```{r}
+--------------------------------------------------------------------------------------
 barpath = paste(otupath,"/Microbial_composition/",sep = "")
 dir.create(barpath)
-
-
+---------------------------------------------------------------------------------------
 p6a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
   geom_bar(stat = "identity", width = 0.5, color = "black") +
   scale_fill_manual("Genera", values = colset2) +
@@ -742,17 +662,11 @@ p6a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)
 
 # Tampilkan plot
 p6a
-```
 
-
-```{r}
+#Save
 FileName2 <- paste(barpath,"/a2_",j,"_All block-new color-outer",".jpg", sep = "")
   ggsave(FileName2, p6a, width = 10, height =8, dpi = 800 )
-```
-
-
-
-```{r}
+----------------------------------------------------------------------------------------
 p6a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
   geom_bar(stat = "identity", width = 0.5, color = "black") +
   scale_fill_manual("Genera", values = colset3) +
@@ -777,65 +691,8 @@ p6a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)
 
 # Tampilkan plot
 p6a
-```
 
-```{r}
+
+#Save
 FileName2 <- paste(barpath,"/a2_",j,"_Outer1",".jpg", sep = "")
   ggsave(FileName2, p6a, width = 10, height =8, dpi = 800 )
-```
-
-
-
-
-
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-
-
-
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
