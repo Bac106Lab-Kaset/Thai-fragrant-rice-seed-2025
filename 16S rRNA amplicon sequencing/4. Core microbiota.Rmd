@@ -1,128 +1,92 @@
 ---
 title: "Core microbiota"
 author: "Hendra"
-date: "2025-10-08"
-output: html_notebook
 ---
 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-
-```{r}
 ps = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/Phy16s-riceseed.rds")
-```
 
-```{r}
 library(microbiome)
 library(dplyr)
 library(phyloseq)
-```
+
 
 ##Prevalence of taxonomic groups
 
-```{r}
 head(prevalence(ps, detection = 1/100, sort = TRUE))
-```
-```{r}
 head(prevalence(ps, detection = 1/100, sort = TRUE, count = TRUE))
-```
+
 #Core microbiota analysis
 
-```{r}
 core.taxa.standard <- core_members(ps, detection = 0, prevalence = 50/100)
 pseq.core <- core(ps, detection = 0, prevalence = .7)
 pseq.core2 <- aggregate_rare(ps, "Genus", detection = 0, prevalence = 1)
-```
-```{r}
+
 core.taxa <- taxa(pseq.core)
-```
+
 
 ##Core abundance and diversity
 
-```{r}
+
 core.abundance <- sample_sums(core(ps, detection = .01, prevalence = .95))
-```
+
 Following.....
 
-```{r}
+
 #library(jeevanuDB)
 transform <- microbiome::transform
-```
 
 
-```{r}
+
 rh <- subset_samples(ps, Source == "Origin") 
 print(rh)
-```
-```{r}
+
 rh <- prune_taxa(taxa_sums(rh) > 0, rh)
 print(rh)
-```
-```{r}
+
 rh.rel <- microbiome::transform(rh, "compositional")
 print(rh.rel)
-```
+
 
 #This step change composition to 1:2
 
-```{r}
 taxa_names(rh.rel)[1:2]
-```
-```{r}
+
 taxa_names(rh.rel) <- paste0("ASV", seq(ntaxa(rh.rel)))
 taxa_names(rh.rel)[1:2]
-```
-```{r}
+
 core.taxa.standard <- core_members(rh.rel, detection = 0.01, prevalence = 90/100)
 
 core.taxa.standard
-```
 
-```{r}
 rh.core <- core(rh.rel, detection = 0.01, prevalence = .9)
 class(rh.core )
-```
-```{r}
+
 core.taxa <- taxa(rh.core)
 class(core.taxa)
-```
-```{r}
+
 otu_table(rh.core)
-```
 
-```{r}
 otu_table(rh.core)["ASV286"]
-```
 
-```{r}
 tax_table(rh.core)
 ```
 
 ```{r}
 tax.mat <- tax_table(rh.core)
 class(tax.mat)
-```
 
-```{r}
 tax.df <- as.data.frame(tax.mat)
 class(tax.df)
-```
 
-```{r}
 tax.df$OTU <- rownames(tax.df)
-```
 
-```{r}
 core.taxa.class <- dplyr::filter(tax.df, rownames(tax.df) %in% core.taxa)
 knitr::kable(head(core.taxa.class))
-```
+
 
 ##Core line plots
 
-```{r}
 det <- c(0, 0.1, 0.5, 2, 5, 20)/100
 prevalences <- seq(.05, 1, .05)
 
@@ -130,11 +94,10 @@ plot_core(rh.rel, prevalences = prevalences,
           detections = det, plot.type = "lineplot") + 
   xlab("Relative Abundance (%)") + 
   theme_bw()
-```
+---------------------------------------------------------------------------------------
 
 #Core heatmaps
 
-```{r}
 prevalences <- seq(.05, 1, .05)
 detections <- round(10^seq(log10(1e-2), log10(.2), length = 10), 3)
 
@@ -149,18 +112,14 @@ p1 <- plot_core(rh.rel,
 
 p1 <- p1 + theme_bw() + ylab("ASVs")
 p1
-```
+----------------------------------------------------------------
 #Using viridis color palette
 
-```{r}
 library(viridis)
 print(p1 + scale_fill_viridis())
-```
 
 ##Genus level
 
-
-```{r}
 library(RColorBrewer)
 library(knitr)
 df <- p1$data 
@@ -169,47 +128,29 @@ list <- df$Taxa
 
 tax <- as.data.frame(tax_table(rh.rel))
 class(tax)
-```
-```{r}
-tax$ASV <- rownames(tax)
-```
 
-```{r}
+tax$ASV <- rownames(tax)
+
 tax2 <- dplyr::filter(tax, rownames(tax) %in% list) 
 head(tax2)
-```
 
-```{r}
 tax.unit <- tidyr::unite(tax2, Taxa_level,c("Kingdom", "Phylum", "Class", "Family", "Genus", "Species", "Confidence", "ASV"), sep = "_;", remove = TRUE)
 
 tax.unit$Taxa_level <- gsub(pattern="[a-z]__",replacement="", tax.unit$Taxa_level)
 
-```
-
-```{r}
 df$Taxa <- tax.unit$Taxa_level
 knitr::kable(head(df))
-```
 
-```{r}
 p1$data <- df
 
 plot(p1 + theme(axis.text.y = element_text(face="italic")))
-```
 
-
-```{r}
 rh.rel.gen <- aggregate_taxa(rh.rel, "Genus")
-```
-```{r}
+
 any(taxa_names(rh.rel.gen) == "Unknown")
-```
-```{r}
+
 rh.rel.gen <- subset_taxa(rh.rel.gen, Genus!="Unknown")
-```
 
-
-```{r}
 library(RColorBrewer)
 prevalences <- seq(.7, 1, .7)
 detections <- round(10^seq(log10(1e-2), log10(.2), length = 10), 2)
@@ -222,15 +163,11 @@ p1 <- plot_core(rh.rel.gen,
     xlab("Detection Threshold (Relative Abundance)")
 p1 <- p1 + theme_bw() + ylab("ASVs")
 p1
-```
 
-```{r}
+#Save
 ggsave("Core mcrobiota new.tiff", width = 6, height = 4)
-```
+-------------------------------------------------------------------------------------------------
 
-
-
-```{r}
 taxa_names(rh.rel.gen) <- gsub("Bacteria_ Proteobacteria_ Gammaproteobacteria_", "", taxa_names(rh.rel.gen))
 p2 <- plot_core(rh.rel.gen, 
                 plot.type = "heatmap", 
@@ -248,63 +185,5 @@ scale_y_discrete(expand = c(0.1, 0.1))  # Mengurangi ruang kosong di sumbu Y
 
 p2
 
-```
-
-```{r}
+#save
 ggsave("Core microbiota1.png", width = 10, height = 6, dpi = 600, bg = "transparent")
-```
-
-
-
-
-
-
-
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-
-
-
-
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
