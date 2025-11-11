@@ -3,7 +3,6 @@ title: "Bacterial composition"
 author: "Hendra"
 ---
 
-----------------------------------------------------------------------------------------------------------------
 library(ggalluvial)
 library(eulerr)
 library(microbiome)
@@ -11,7 +10,7 @@ library(tidyverse)
 library(tidyr)
 library(tibble)
 library(phyloseq)
-
+-----------------------------------------------------------------------------------------------------------------
 ###----Composition in rice seed origin sample-------###
 ##-----------Field Location----------------##
 
@@ -135,28 +134,13 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   )
 p4
 ---------------------------------------------------------------------------------------------------------------
-#colset2 <- c(
-  "Genus1"  = "#E69F00",  # Orange
-  "Genus2"  = "#56B4E9",  # Sky Blue
-  "Genus3"  = "#009E73",  # Bluish Green
-  "Genus4"  = "#F0E442",  # Yellow
-  "Genus5"  = "#0072B2",  # Blue
-  "Genus6"  = "#D55E00",  # Vermillion
-  "Genus7"  = "#CC79A7",  # Reddish Purple
-  "Genus8"  = "#999999",  # Grey
-  "Genus9"  = "#117733",  # Dark Green (Paul Tol)
-  "Genus10" = "#88CCEE",  # Light Blue (Paul Tol)
-  "Genus11" = "#332288"   # Indigo (Paul Tol)
-)
-------------------------------------------------------------------------------------------------------------------
 colset1 <- RColorBrewer::brewer.pal(9,"Set1")
 colset2 <- RColorBrewer::brewer.pal(12,"Paired")
 colset3 <- c(RColorBrewer::brewer.pal(11,"Set1"),RColorBrewer::brewer.pal(9,"Pastel1"))
 colset4 = colset3
-
+---------------------------------------------------------------------------------------------------------------
 barpath = paste(otupath,"/Microbial_composition/",sep = "")
 dir.create(barpath)
-------------------------------------------------------------------------------------------------------------------
 
 p4a1 <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
   geom_bar(stat = "identity", width = 0.8, color = "black") +
@@ -260,7 +244,6 @@ colnames(cc)= c("aa","allsum")
 
 colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   zhnagxu2$aa = factor(zhnagxu2$aa,order = TRUE,levels = cc$aa)
-
   zhnagxu3 = zhnagxu2
   # Taxonomies_x = ddply(zhnagxu3,"group", summarize, label_y = cumsum(Abundance))
   # head(Taxonomies_x )
@@ -283,7 +266,7 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   # }
 
   Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
--------------------------------------------------------------------------------------------------------------------------  
+ 
   p4_1 <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
   geom_bar(stat = "identity", width = 0.8, color = "black") +
   scale_fill_manual("Genera", values = colset3) +
@@ -294,9 +277,9 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   # Check background
   theme_classic() +
   theme(
-    panel.background = element_rect(fill = "transparent", color = NA),  # 📌 
-    plot.background = element_rect(fill = "transparent", color = NA),   # 📌 
-    legend.position = "bottom",  # 📌 Legend di bawah
+    panel.background = element_rect(fill = "transparent", color = NA),  #  
+    plot.background = element_rect(fill = "transparent", color = NA),   #  
+    legend.position = "bottom",  # 
     legend.text = element_text(face = "italic"),
     legend.title = element_text(face = "bold"),
     legend.key.size = unit(15, "pt"),
@@ -429,12 +412,11 @@ p5a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)
   guides(fill = guide_legend(title = j)) +
   labs(x = "", y = "Relative abundance (%)", title = "") +
   
-  # Menghapus background agar transparan
   theme_classic() +
   theme(
-    panel.background = element_rect(fill = "transparent", color = NA),  # 📌 Hapus background panel
-    plot.background = element_rect(fill = "transparent", color = NA),   # 📌 Hapus background plot
-    legend.position = "bottom",  # 📌 Legend di bawah
+    panel.background = element_rect(fill = "transparent", color = NA),  # 
+    plot.background = element_rect(fill = "transparent", color = NA),   # 
+    legend.position = "bottom",  # 
     legend.text = element_text(face = "italic"),
     legend.title = element_text(face = "bold"),
     legend.key.size = unit(15, "pt"),
@@ -457,7 +439,6 @@ p5a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)
   guides(fill = guide_legend(title = j)) +
   labs(x = "", y = "Relative abundance (%)", title = "") +
   
-  # Menghapus background agar transparan
   theme_classic() +
   theme(
     panel.background = element_rect(fill = "transparent", color = NA),  # 📌 Hapus background panel
@@ -578,10 +559,10 @@ colnames(zhnagxu2) <- c("aa","group","Abundance","sd")
   # }
 
   Taxonomies_x$aa = factor(Taxonomies_x$aa,order = TRUE,levels = c(as.character(cc$aa)))
-  --------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------
 barpath = paste(otupath,"/Microbial_composition/",sep = "")
 dir.create(barpath)
----------------------------------------------------------------------------------------
+
 p6a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)) +
   geom_bar(stat = "identity", width = 0.5, color = "black") +
   scale_fill_manual("Genera", values = colset2) +
@@ -617,7 +598,6 @@ p6a <- ggplot(Taxonomies_x, aes(x = group, y = Abundance, fill = aa, order = aa)
   guides(fill = guide_legend(title = j)) +
   labs(x = "", y = "Relative abundance (%)", title = "") +
   
-  # Menghapus background agar transparan
   theme_classic() +
   theme(
     panel.background = element_rect(fill = "transparent", color = NA),  # 
