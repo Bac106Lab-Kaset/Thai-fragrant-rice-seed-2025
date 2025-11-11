@@ -1,5 +1,5 @@
 ---
-title: "Import data for Build Phyloseq-Tao Wen 2023"
+title: "Import data for Build Phyloseq"
 author: "Hendra"
 ---
 
@@ -20,38 +20,26 @@ library(ggtree)
 # ?read_tre
 # ?readDNAStringSet
 library(plyr)
-
-library(reshape2)  # Untuk melt dari reshape2
-# atau
-library(data.table)  # Untuk melt dari data.table
-```
+library(reshape2)  
+library(data.table) 
 
 #---Input Data----#
 
-```{r}
 otu = read.delim("D:/S3-KU/Rice seed analysis/Phyloseq/OTU table new.txt",row.names = 1)
 tax = read.delim("D:/S3-KU/Rice seed analysis/Phyloseq/Taxonomy table.txt",row.names = 1)
 map = read.delim("D:/S3-KU/Rice seed analysis/Phyloseq/rice-seed-metadataR.txt",row.names = 1)
 map$ID = row.names(map)
 
 head(map)
-```
-
-```{r}
 head(tax)
-```
 
-```{r}
+----------------------------------------------------------------------------------------------------
 library(ggtree)
 tree  = read_tree("D:/S3-KU/Rice seed analysis/Phyloseq/Phylogenetic tree new.nwk")
-
 library(Biostrings)
 rep = readDNAStringSet("D:/S3-KU/Rice seed analysis/Phyloseq/sequences data.fasta")
-```
-
-```{r}
+------------------------------------------------------------------------------------------------------
 library(phyloseq)
-
 psseed = phyloseq(sample_data(map),
               otu_table(as.matrix(otu), taxa_are_rows=TRUE), 
               tax_table(as.matrix(tax)),
@@ -59,37 +47,23 @@ psseed = phyloseq(sample_data(map),
               refseq(rep)
               )
 psseed
-```
 
-```{r}
 saveRDS(ps,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-all.rds")
-```
+--------------------------------------------------------------------------------------------------------
+#------Sub set Metadata-------#
 
-#------SUB-SET METADATA-------#
-
-```{r}
 psorigin <- subset_samples(psseed,  Source == "Origin")
-```
 
-```{r}
 saveRDS(ps,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-origin.rds")
-```
 
-```{r}
 pscultur <- subset_samples(psseed,  Source == "Culturable")
-```
 
-```{r}
 saveRDS(ps,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-cultur.rds")
-```
+-----------------------------------------------------------------------------------------------------------
 
 #--------Change to ASV conversion----------#
 
-```{r}
 asv_names <- paste0("ASV_", seq(1:ntaxa(psseed)))  # Make the new name
-```
-
-```{r}
 # Save the original OTU name
 old_names <- taxa_names(psseed)
 
@@ -101,19 +75,13 @@ otu_table(psseed) <- otu_table(psseed)[asv_names, ]  # Ensure correct order
 tax_table(psseed) <- tax_table(psseed)[asv_names, ]
 phy_tree(psseed) <- prune_taxa(asv_names, phy_tree(psseed))  # if have tree
 refseq(psseed) <- refseq(psseed)[asv_names]
-```
 
-```{r}
 new_refseq <- refseq(psseed)  # pick old refseq 
 names(new_refseq) <- asv_names  # Change name to ASV
 new_refseq <- Biostrings::DNAStringSet(new_refseq)  # reset allign to format
-```
 
-```{r}
 Biostrings::writeXStringSet(new_refseq, filepath = "new_refseq_output.fasta")
-```
 
-```{r}
 psseed_asv <- phyloseq(
   sample_data(psseed),
   otu_table(psseed),
@@ -123,8 +91,8 @@ psseed_asv <- phyloseq(
 )
 
 psseed_asv
-
-# all(taxa_names(psseed_asv) == names(refseq(ps_asv)))  # Harus TRUE
+----------------------------------------------------------------------------------------------------
+# all(taxa_names(psseed_asv) == names(refseq(ps_asv)))  # TRUE
 # tax_table(ps_asv)
 # otu_table(psseed_asv)
 # saveRDS(ps_asv,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-all.rds")
@@ -133,3 +101,4 @@ psseed_asv
 # psseed_asv_cultur <- subset_samples(psseed_asv,  Source == "Culturable")
 # saveRDS(psseed_asv_cultur,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-cultur.rds")
 ```
+
