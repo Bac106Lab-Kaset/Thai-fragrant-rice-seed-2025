@@ -3,7 +3,7 @@
 # Hendra, H. _et al_., 2025
 
 
-# Thai-fragrant-rice-seed-microbiome
+# Brief description
 
 This project focuses on the analysis of the bacterial microbiome associated with BLB disease in Thai fragrant rice seeds using 16S rRNA gene of V3 - V4 amplicon sequences.
 This study aimed to investigate the impact of BLB presence in rice seeds on the bacterial communities of the susceptible cultivar Khao Dawk Mali 105 (KDML 105) collected from natural paddy fields in Thailand using 16S rRNA amplicon metagenomic sequencing. It also compared the seed-associated bacterial communities between non-infected seeds of the susceptible cultivar KDML 105 and the moderately resistant cultivar Pathum Thani 1 (PTT 1).
