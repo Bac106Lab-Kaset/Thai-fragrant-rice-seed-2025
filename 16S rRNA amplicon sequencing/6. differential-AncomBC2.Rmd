@@ -548,9 +548,6 @@ p_volcano2 <- res_pair %>%
 print(p_volcano2)
 -------------------------------------------------------------------------------------------------------------------
 
->>>BARPLOT
-
-```{r}
 library(dplyr)
 library(ggplot2)
 
@@ -665,15 +662,10 @@ if (nrow(res_lam_vs_lahan) > 0) {
   print(p_lam_vs_lahan)
 }
 
-
-```{r}
 ggsave("pairtest_ancombc2_nangrong-lahansai.png", p_nang_vs_lahan, width = 6, height = 4, dpi = 1000)
 ggsave("pairtest_ancombc2_nangrong-lamlukka.png", p_nang_vs_lam, width = 6, height = 5, dpi = 1000)
-```
-
+-------------------------------------------------------------------------------------------------------------------
 #--------Volcano Plot ------#
-
-```{r}
 
 library(dplyr)
 library(ggplot2)
@@ -681,7 +673,6 @@ library(ggrepel)
 
 # === Volcano Plots ===
 
-## Fungsi umum volcano
 plot_volcano <- function(df, title) {
   ggplot(df, aes(x = lfc, y = -log10(q), color = lfc > 0, label = taxon_clean)) +
     geom_point(size = 3, alpha = 0.8) +
@@ -712,4 +703,4 @@ if (nrow(res_lam_vs_lahan) > 0) {
   v_lam_vs_lahan <- plot_volcano(res_lam_vs_lahan, "Volcano: LamLukKa vs LahanSai")
   print(v_lam_vs_lahan)
 }
-
+-------------------------------------------------------------------------------------------------------------------
