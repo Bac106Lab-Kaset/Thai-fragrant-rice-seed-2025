@@ -1,14 +1,9 @@
 ---
 title: "Import data for Build Phyloseq-Tao Wen 2023"
 author: "Hendra"
-output: html_notebook
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r}
 # install.packages("BiocManager")
 library(BiocManager)
 # install("phyloseq")
@@ -128,37 +123,13 @@ psseed_asv <- phyloseq(
 )
 
 psseed_asv
-```
 
-```{r}
-all(taxa_names(psseed_asv) == names(refseq(ps_asv)))  # Harus TRUE
+# all(taxa_names(psseed_asv) == names(refseq(ps_asv)))  # Harus TRUE
+# tax_table(ps_asv)
+# otu_table(psseed_asv)
+# saveRDS(ps_asv,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-all.rds")
+# psseed_asv_origin <- subset_samples(ps_asv,  Source == "Origin")
+# saveRDS(psseed_asv_origin,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
+# psseed_asv_cultur <- subset_samples(psseed_asv,  Source == "Culturable")
+# saveRDS(psseed_asv_cultur,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-cultur.rds")
 ```
-
-```{r}
-tax_table(ps_asv)
-```
-
-```{r}
-otu_table(psseed_asv)
-```
-
-```{r}
-saveRDS(ps_asv,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-all.rds")
-```
-
-```{r}
-psseed_asv_origin <- subset_samples(ps_asv,  Source == "Origin")
-```
-
-```{r}
-saveRDS(psseed_asv_origin,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
-```
-
-```{r}
-psseed_asv_cultur <- subset_samples(psseed_asv,  Source == "Culturable")
-```
-
-```{r}
-saveRDS(psseed_asv_cultur,"D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-cultur.rds")
-```
-
