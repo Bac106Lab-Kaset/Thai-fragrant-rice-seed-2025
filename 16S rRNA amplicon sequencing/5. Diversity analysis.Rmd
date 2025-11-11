@@ -3,7 +3,7 @@ title: "Bacterial diversity analysis"
 author: "Hendra"
 ---
 
-```{r}
+
 library(ggClusterNet)
 library(phyloseq)
 library(tidyverse)
@@ -12,13 +12,12 @@ library(tidyr)
 library(rstatix)
 library(ggpubr)
 library(ggplot2)
-```
+-------------------------------------------------------------------------------------------------------------------
 
 # 1. Alpha Diversity
 
 psseed_origin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
 sample_data(psseed_origin)
-
 
 index = c("Shannon","Inv_Simpson","Pielou_evenness","Simpson_evenness" ,"Richness" ,"Chao1","ACE" )
 
@@ -27,7 +26,6 @@ samplesize = min(phyloseq::sample_sums(ps))
 ps11  = phyloseq::rarefy_even_depth(ps,sample.size = samplesize)
 mapping = phyloseq::sample_data(ps11)
 ps11 = phyloseq::filter_taxa(ps11, function(x) sum(x ) >0 , TRUE); ps11
-
 
 mapping$Allgroup = as.factor(mapping$Allgroup)
 count = as.data.frame(t(ggClusterNet::vegan_otu(ps11)))
@@ -75,16 +73,13 @@ result1 = EasyStat::FacetMuiPlotresultBox(data = data,num = c(3:(n -1)),
 p1_1 = result1[[1]] +
   ggplot2::guides(fill = guide_legend(title = NULL))
 p1_1
------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
 
 #---------Another ggplot----#
-
 alppath = paste(otupath,"/alpha/",sep = "")
 dir.create(alppath)
 
-#---------
-  group = "Group"
-# 
+group = "Group"
 axis_order =  phyloseq::sample_data(ps)$Allgroup %>%unique();axis_order
 #> [1] "Group1" "Group2" "Group3"
 
@@ -120,13 +115,11 @@ axis_order =  phyloseq::sample_data(ps)$Allgroup %>%unique();axis_order
   Inv_Simpson <- vegan::diversity(x, index = "invsimpson")
   Inv_Simpson
 
-
-  #OTU
   S <- vegan::specnumber(x);S  ##。S2 = rowSums(x>0)
 
   S2 = rowSums(x>0)
   
-  #多样性指标：均匀度Pielou_evenness，Simpson_evenness
+  # Pielou_evenness，Simpson_evenness
   Pielou_evenness <- Shannon/log(S)
   Simpson_evenness <- Inv_Simpson/S
   est <- vegan::estimateR(x)
@@ -155,8 +148,6 @@ mytheme1 <- theme(
   panel.border = element_rect(color = "black", fill = NA)
 )
 
-
-#--
 sel = c(match("Shannon",colnames(index)),match("Inv_Simpson",colnames(index)),match("Chao1",colnames(index)),match("Pielou_evenness",colnames(index)),match("ACE",colnames(index)))
 data = cbind(data.frame(ID = 1:length(index$Allgroup),group = index$Allgroup),index[sel])
 # head(data)
@@ -173,7 +164,6 @@ p1_1 = result1[[1]] +
   ggplot2::scale_fill_manual(values = colset3)
 p1_1
 
-
 p1_1 = result1[[1]] +
     ggplot2::scale_x_discrete(limits = axis_order) + 
   mytheme1 +
@@ -184,17 +174,10 @@ p1_1 = result1[[1]] +
   ) +
   ggplot2::guides(fill = guide_legend(title = NULL)) +
   theme(
-    # Judul indeks (facet label) dengan font Arial, bold, ukuran 15
     strip.text = element_text(family = "Arial", face = "bold", size = 15),
-    
-    # Menghapus keterangan sumbu X
     axis.title.x = element_blank(),
     axis.text = element_text(family = "Arial",  face = "bold", size = 18),
-    
-    # Menyesuaikan sumbu Y menjadi hitam, Arial, bold, 15
     axis.title.y = element_text(family = "Arial", face = "bold", size = 12),
-    
-    # Menyesuaikan legend dengan font Arial, bold, 15
     legend.text = element_text(family = "Arial", size = 12),
     legend.title = element_blank(),  # Menghapus title legend
     legend.key = element_rect(fill = NA, colour = NA),
@@ -206,10 +189,8 @@ p1_1
 #save
 FileName <- paste(alppath,"Alpha-all sample3", ".png", sep = "")
 ggsave(FileName, p1_1, width = 8, height =7,dpi = 800)
-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
 
-
-#
 p1_1 = result1[[2]] %>% ggplot(aes(x = group , y = dd )) + 
   geom_violin(alpha = 1, aes(fill = group)) +
   geom_jitter(aes(color = group), position = position_jitter(0.19), size = 4, alpha = 0.5) +
@@ -264,8 +245,8 @@ p1_3 = res[[1]]+ scale_x_discrete(limits = axis_order) +
   scale_fill_manual(values = colset1)
 p1_3
 
-#FileName <- paste(alppath,"Alpha_Facet_box", ".pdf", sep = "")
-#ggsave(FileName, p1_1, width = ((1 + gnum) * 3), height =4,limitsize = FALSE)
+FileName <- paste(alppath,"Alpha_Facet_box", ".pdf", sep = "")
+ggsave(FileName, p1_1, width = ((1 + gnum) * 3), height =4,limitsize = FALSE)
 
 FileName <- paste(alppath,"Alpha_Facet_bar", ".pdf", sep = "")
 ggsave(FileName, p1_2, width = ((1 + gnum) * 3), height = 4,limitsize = FALSE)
@@ -281,9 +262,8 @@ ggsave(FileName, p1_2, width = ((1 + gnum) * 3), height = 4,limitsize = FALSE)
 
 FileName <- paste(alppath,"Alpha_Facet_boxbar", ".jpg", sep = "")
 ggsave(FileName, p1_3, width = ((1 + gnum) * 3), height = 4,limitsize = FALSE)
----------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
 
-#--
 krusk1 = ggpubr::compare_means( Shannon ~ group, data=data, method = "kruskal.test")
 krusk2 = ggpubr::compare_means( Richness ~ group, data=data, method = "kruskal.test")
 krusk3 = ggpubr::compare_means( Pielou_evenness ~ group, data=data, method = "kruskal.test")
@@ -291,23 +271,19 @@ krusk3 = ggpubr::compare_means( Pielou_evenness ~ group, data=data, method = "kr
 dat = rbind(krusk1,krusk2,krusk3) %>% as.data.frame()
 FileName <- paste(alppath,"/alpha_diversity_index_all_p_Kruskal-Wallis.csv", sep = "")
 write.csv(dat,FileName,sep = "")
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
 
 # 2. Beta Diversity
 
-```{r}
 library(ggClusterNet)
 library(phyloseq)
 library(tidyverse)
 library(jeevanuDB)
-```
-
+-------------------------------------------------------------------------------------------------------------------
 
 psseed_origin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/Phy16s-riceseed-origin.rds")
 sample_data(psseed_origin)
-
 psorigin <- subset_samples(ps,  Source == "Origin")
-
 betapath = paste(otupath,"/beta/",sep = "")
 dir.create(betapath)
 
@@ -318,14 +294,10 @@ Micromet = "adonis"
 pvalue.cutoff = 0.05
 pair=TRUE
 
-# ----
 ps1_rela = phyloseq::transform_sample_counts(psorigin, function(x) x / sum(x) )
-
-# Check phyloseq data
 class(ps1_rela)
 str(ps1_rela)
 
-# Manual check of data type
 is_dist <- inherits(unif, "dist")
 print(is_dist)
 
@@ -343,8 +315,6 @@ str(unif)            # View internal structure
 # Verify if it's a valid distance matrix
 inherits(unif, "dist")   # TRUE if it's a distance object, FALSE otherwise
 
-# ----
-#---------
 if (method == "DCA") {
   # method = "DCA"
   ordi = phyloseq::ordinate(ps1_rela, method=method, distance=dist)
@@ -365,9 +335,7 @@ if (method == "CCA") {
   #
   eig = ordi$CA$eig^2
 }
-```
 
-```{r}
 #---------RDA----
 if (method == "RDA") {
   # method ="RDA"
@@ -379,22 +347,16 @@ if (method == "RDA") {
   eig = ordi$CA$eig
 }
 
-#---------DPCoA----
-
 #---------MDS----
 if (method == "MDS") {
   # method = "MDS"
   # ordi = ordinate(ps1_rela, method=ord_meths[i], distance=dist)
   ordi = phyloseq::ordinate(ps1_rela, method=method, distance=dist)
-  #
   points = ordi$vectors[,1:2]
   colnames(points) = c("x", "y") #
-  #
   eig = ordi$values[,1]
 }
-```
 
-```{r}
 if (method == "PCoA") {
   # Calculate the distance matrix
   unif = phyloseq::distance(ps1_rela, method = dist, type = "samples")
@@ -414,10 +376,7 @@ if (method == "PCoA") {
   # Save the eigenvalues
   eig = pcoa$eig
 }
-```
 
-
-```{r}
 if (method == "PCoA") {
   # Calculate distance matrix
   unif <- phyloseq::distance(ps1_rela, method = dist, type = "samples")
@@ -433,15 +392,9 @@ if (method == "PCoA") {
   eig <- pcoa$eig
 }
 
-```
-
-```{r}
 str(x)  # Check structure of x
 str(y)  # Check structure of y
 
-```
-
-```{r}
 #----PCA----
 
 otu_table = as.data.frame(t(ggClusterNet::vegan_otu(ps1_rela )))
@@ -474,7 +427,6 @@ if (method == "LDA") {
   map = as.data.frame(sample_data(ps1_rela))
   model = MASS::lda(data, map$Group)
 
-  #------
   ord_in = model
   axes = c(1:2)
   points = data.frame(predict(ord_in)$x[, axes])
@@ -491,7 +443,6 @@ if (method == "NMDS") {
   # i = 5
   # dist = "bray"
   ordi = phyloseq::ordinate(ps1_rela, method=method, distance=dist)
-  #样本坐标,
   points = ordi$points[,1:2]
   colnames(points) = c("x", "y") #
   #stress
@@ -513,27 +464,24 @@ if (method == "t-sne") {
   map = as.data.frame(sample_data(ps1_rela))
   # row.names(map)
   #---------tsne
-  install.packages("Rtsne")
+ 
+# install.packages("Rtsne")
   library(Rtsne)
 
   tsne = Rtsne::Rtsne(data,perplexity = 3)
 
-  #
   points = as.data.frame(tsne$Y)
   row.names(points) =  row.names(map)
   colnames(points) = c("x", "y") #命名行名
   stress= NULL
 }
 
-#--------
 g = sample_data(psorigin)$Allgroup %>% unique() %>% length()
 n = sample_data(psorigin)$Allgroup%>% length()
 o = n/g
 
 source("D:/S3-KU/Taowen analysis/MicroTest.R")
 source("D:/S3-KU/Taowen analysis/pairMicroTest.R")
-
-
 
 if (Micromet == "adonis") {
   # Ensure metadata matches distance matrix
@@ -549,19 +497,13 @@ if (Micromet == "adonis") {
   title1
 }
 
-```
-
-```{r}
 if (F) {
-  #--------
   pairResult = pairMicroTest(ps = ps1_rela, Micromet = Micromet, dist = dist)
   
 } else {
   pairResult = "no result"
 }
 
-
-#--------
 map = as.data.frame(phyloseq::sample_data(ps1_rela))
 map$Allgroup = as.factor(map$Allgroup)
 colbar = length(levels(map$Allgroup))
@@ -582,9 +524,7 @@ if (method %in% c("DCA", "CCA", "RDA",  "MDS", "PCoA","PCA","LDA")) {
   p3 = p2+ggrepel::geom_text_repel(aes(label=points$ID),size = 5)
   p3
 }
-```
 
-```{r}
 if (method %in% c("DCA", "CCA", "RDA", "MDS", "PCoA", "PCA", "LDA")) {
   p2 = ggplot(points, aes(x = x, y = y, fill = Allgroup)) +
     geom_point(alpha = 1, size = 5, pch = 21) +
@@ -617,8 +557,7 @@ p3
 #save
   FileName1 <- paste(betapath,"/a2_",method,"beta-sample2.png", sep = "")
   ggsave(FileName1 , p3, width = 7, height = 6, dpi = 800)
-  ---------------------------------------------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------------------------
 
 if (method %in% c("DCA", "CCA", "RDA", "MDS", "PCoA", "PCA", "LDA")) {
   p2 = ggplot(points, aes(x = x, y = y, fill = Allgroup)) +
@@ -630,18 +569,17 @@ if (method %in% c("DCA", "CCA", "RDA", "MDS", "PCoA", "PCA", "LDA")) {
     ) +
     stat_ellipse(linetype = 2, level = 0.68, aes(group = Allgroup, colour = Allgroup)) +
     theme(
-      panel.background = element_rect(fill = "white", colour = "black"),  # Background white and black
-      panel.grid.major = element_line(colour = "grey80"),                 # Grid  mayor
-      panel.grid.minor = element_line(colour = "grey90"),                 # Grid  minor
-      plot.background = element_rect(fill = "white"),                    # Latar luar putih
-      legend.key = element_rect(fill = "white", colour = "black"),       # Kotak di sekitar legenda
-      legend.background = element_rect(fill = "white", colour = "black") # Latar legenda putih dengan kotak
+      panel.background = element_rect(fill = "white", colour = "black"),  # 
+      panel.grid.major = element_line(colour = "grey80"),                 # 
+      panel.grid.minor = element_line(colour = "grey90"),                 # 
+      plot.background = element_rect(fill = "white"),                    # 
+      legend.key = element_rect(fill = "white", colour = "black"),       # 
+      legend.background = element_rect(fill = "white", colour = "black") # 
     )
 
-  # Plot tanpa label sampel
   p2
 }
-
+-------------------------------------------------------------------------------------------------------------------
 mytheme1 = ggplot2::theme_bw() + ggplot2::theme(
   panel.background=  ggplot2::element_blank(),
   panel.grid=  ggplot2::element_blank(),
@@ -657,7 +595,6 @@ mytheme1 = ggplot2::theme_bw() + ggplot2::theme(
   axis.text.y =  ggplot2::element_text(),
   legend.text =  ggplot2::element_text()
 )
-
 
 mytheme2 = ggplot2::theme_bw() + ggplot2::theme(
   panel.background=  ggplot2::element_blank(),
@@ -675,17 +612,13 @@ mytheme2 = ggplot2::theme_bw() + ggplot2::theme(
   axis.text.y =  ggplot2::element_text(),
   legend.text =  ggplot2::element_text()
 )
-
-
-#---
+-------------------------------------------------------------------------------------------------------------------
 colset1 <- RColorBrewer::brewer.pal(9,"Set1")
 colset2 <- RColorBrewer::brewer.pal(12,"Paired")
 colset3 <- c(RColorBrewer::brewer.pal(11,"Set1"),RColorBrewer::brewer.pal(9,"Pastel1"))
 colset4 = colset3
+-------------------------------------------------------------------------------------------------------------------
 
-```
-
-```{r}
 if (method %in% c("NMDS")) {
   p2 =ggplot(points, aes(x=x, y=y, fill = Group)) +
     geom_point(alpha=.7, size=5, pch = 21) +
@@ -704,7 +637,6 @@ if (method %in% c("NMDS")) {
   eig = NULL
 }
 
-```{r}
 if (method %in% c("t-sne")) {
   p2 =ggplot(points, aes(x=x, y=y, fill = Group)) +
     geom_point(alpha=.7, size=5, pch = 21) +
@@ -728,18 +660,15 @@ if (method %in% c("t-sne")) {
     mytheme1 + 
     theme(legend.position = c(0.8,0.15))
   p3_1
-
-
-```{r}
- #
+-------------------------------------------------------------------------------------------------------------------
   p3_2 = p3 +
     scale_fill_manual(values = colset1)+
     scale_color_manual(values = colset1,guide = F) + 
     mytheme1 + 
     theme(legend.position = c(0.8,0.15))
   p3_2
-```
 
 #save
   FileName1 <- paste(betapath,"/a2_",method,"beta-sample.png", sep = "")
   ggsave(FileName1 , p3_2, width = 10, height = 8, dpi = 600)
+-------------------------------------------------------------------------------------------------------------------
