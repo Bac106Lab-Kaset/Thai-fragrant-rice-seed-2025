@@ -4,39 +4,28 @@ author: "Hendra"
 ---
 
 
-ps = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/Phy16s-riceseed.rds")
-
 library(microbiome)
 library(dplyr)
 library(phyloseq)
+library(jeevanuDB)
+----------------------------------------------------------------------------------------
 
-
-##Prevalence of taxonomic groups
+# Prevalence of taxonomic groups
+ps = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/Phy16s-riceseed.rds")
 
 head(prevalence(ps, detection = 1/100, sort = TRUE))
 head(prevalence(ps, detection = 1/100, sort = TRUE, count = TRUE))
 
-#Core microbiota analysis
-
+# Core microbiota analysis
 core.taxa.standard <- core_members(ps, detection = 0, prevalence = 50/100)
 pseq.core <- core(ps, detection = 0, prevalence = .7)
 pseq.core2 <- aggregate_rare(ps, "Genus", detection = 0, prevalence = 1)
-
 core.taxa <- taxa(pseq.core)
 
-
-##Core abundance and diversity
-
-
+# Core abundance and diversity
 core.abundance <- sample_sums(core(ps, detection = .01, prevalence = .95))
 
-Following.....
-
-
-#library(jeevanuDB)
 transform <- microbiome::transform
-
-
 
 rh <- subset_samples(ps, Source == "Origin") 
 print(rh)
@@ -48,15 +37,13 @@ rh.rel <- microbiome::transform(rh, "compositional")
 print(rh.rel)
 
 
-#This step change composition to 1:2
+# This step change composition to 1:2
 
 taxa_names(rh.rel)[1:2]
-
 taxa_names(rh.rel) <- paste0("ASV", seq(ntaxa(rh.rel)))
 taxa_names(rh.rel)[1:2]
 
 core.taxa.standard <- core_members(rh.rel, detection = 0.01, prevalence = 90/100)
-
 core.taxa.standard
 
 rh.core <- core(rh.rel, detection = 0.01, prevalence = .9)
@@ -70,9 +57,7 @@ otu_table(rh.core)
 otu_table(rh.core)["ASV286"]
 
 tax_table(rh.core)
-```
 
-```{r}
 tax.mat <- tax_table(rh.core)
 class(tax.mat)
 
@@ -85,7 +70,7 @@ core.taxa.class <- dplyr::filter(tax.df, rownames(tax.df) %in% core.taxa)
 knitr::kable(head(core.taxa.class))
 
 
-##Core line plots
+# Core line plots
 
 det <- c(0, 0.1, 0.5, 2, 5, 20)/100
 prevalences <- seq(.05, 1, .05)
@@ -96,7 +81,7 @@ plot_core(rh.rel, prevalences = prevalences,
   theme_bw()
 ---------------------------------------------------------------------------------------
 
-#Core heatmaps
+# Core heatmaps
 
 prevalences <- seq(.05, 1, .05)
 detections <- round(10^seq(log10(1e-2), log10(.2), length = 10), 3)
@@ -113,12 +98,12 @@ p1 <- plot_core(rh.rel,
 p1 <- p1 + theme_bw() + ylab("ASVs")
 p1
 ----------------------------------------------------------------
-#Using viridis color palette
+# Using viridis color palette
 
 library(viridis)
 print(p1 + scale_fill_viridis())
 
-##Genus level
+==Genus level
 
 library(RColorBrewer)
 library(knitr)
@@ -166,7 +151,7 @@ p1
 
 #Save
 ggsave("Core mcrobiota new.tiff", width = 6, height = 4)
--------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
 
 taxa_names(rh.rel.gen) <- gsub("Bacteria_ Proteobacteria_ Gammaproteobacteria_", "", taxa_names(rh.rel.gen))
 p2 <- plot_core(rh.rel.gen, 
@@ -187,3 +172,4 @@ p2
 
 #save
 ggsave("Core microbiota1.png", width = 10, height = 6, dpi = 600, bg = "transparent")
+-------------------------------------------------------------------------------------------------------------------
