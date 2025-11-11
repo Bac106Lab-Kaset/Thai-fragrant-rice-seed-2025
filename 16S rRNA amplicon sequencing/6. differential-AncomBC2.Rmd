@@ -3,20 +3,15 @@ title: "ANCOM"
 author: "Hendra"
 ---
 
-
-```{r}
 library(BiocManager)
 library(phyloseq)
 library(ANCOMBC)
 library(dplyr)
-```
+-------------------------------------------------------------------------------------------------------------------
 
-```{r}
 psseed_origin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Physeq-origin.rds")
 sample_data(psseed_origin)
-```
 
-```{r}
 # Subset to baseline
 pseq = phyloseq::subset_samples(psseed_origin, Source == "Origin")
 
@@ -26,8 +21,7 @@ meta_data$Location = recode(meta_data$Location,
                        obese = "LamLukKa_PathumThani",
                        severeobese = "LamLukKa_PathumThani",
                        morbidobese = "LamLukKa_PathumThani")
-```
-```{r}
+
 # Note that by default, levels of a categorical variable in R are sorted 
 # alphabetically. In this case, the reference level for `bmi` will be 
 # `lean`. To manually change the reference level, for instance, setting `obese`
@@ -36,10 +30,7 @@ meta_data$Location = factor(meta_data$Location, levels = c("NangRong_BuriRam", "
 # You can verify the change by checking:
 # levels(meta_data$bmi)
 
-
 colnames(meta_data)
-
-
 
 # Create the region variable
 meta_data$Variety = recode(as.character(meta_data$Variety),
@@ -48,9 +39,7 @@ meta_data$Variety = recode(as.character(meta_data$Variety),
 
 phyloseq::sample_data(pseq) = meta_data
 
-
 sample_variables(pseq)
-
 
 # Subset to specific Locations
 pseq <- phyloseq::subset_samples(
@@ -65,15 +54,9 @@ pseq <- phyloseq::subset_samples(
   !Variety %in% c("EE", "unknown")
 )
 
-
 print(pseq)
+-------------------------------------------------------------------------------------------------------------------
 
-
-
-```
-
-
-```{r}
 library(phyloseq)
 
 # Convert counts to relative abundance
@@ -87,25 +70,18 @@ high_abund_taxa <- names(mean_abund[mean_abund > 0.01])
 ps_high <- prune_taxa(high_abund_taxa, ps)
 
 
-```
-
-```{r}
 pseq_perm = ps_high
 meta_data_perm = microbiome::meta(pseq_perm)
 meta_data_perm$bmi = sample(meta_data_perm$bmi)
 
 phyloseq::sample_data(pseq_perm) = meta_data_perm
-```
 
-```{r}
 output = ancombc2(data = pseq_perm, tax_level = "Genus",
                   fix_formula = "Location", rand_formula = NULL,
                   p_adj_method = "holm", pseudo_sens = TRUE,
                   prv_cut = 0, lib_cut = 1000, s0_perc = 0.05,
                   group = "Location", struc_zero = TRUE, neg_lb = TRUE)
-```
-
-```{r}
+-------------------------------------------------------------------------------------------------------------------
 library(dplyr)
 res_perm = output$res %>%
     dplyr::transmute(taxon = taxon,
@@ -148,20 +124,17 @@ fig_p = df_p %>%
           panel.grid.minor.y = element_blank(),
           legend.position = "bottom")
 fig_p
-```
+-------------------------------------------------------------------------------------------------------------------
 
-
-```{r}
-# ===================================
+===================================
 # 1. Global test (Location-set)
-# ===================================
+===================================
 library(phyloseq)
 library(ANCOMBC)
 library(dplyr)
 library(ggplot2)
 
-# Run ANCOMBC2 - Global analysis
-# Jalankan ANCOMBC2 untuk analisis global berdasarkan "Location"
+# Run ANCOMBC2 - Global analysis "Location"
 output1 <- ancombc2(
   data = pseq,
   tax_level = "Genus",
@@ -177,7 +150,6 @@ output1 <- ancombc2(
   neg_lb = TRUE,
   alpha = 0.05
 )
-
 
 res_global = output1$res_global
 # display the first 10 rows
@@ -205,12 +177,9 @@ library(openxlsx)
 
 # Save the res_global results to Excel
 #write.xlsx(res_global, "ANCOMBC2_GlobalTest.xlsx")
+-------------------------------------------------------------------------------------------------------------------
 
-```
-
-```{r}
 library(ggplot2)
-
 # Asumsi res_global adalah data.frame hasil ANCOM-BC2 global test
 res_plot <- res_global %>%
   dplyr::mutate(
@@ -232,10 +201,6 @@ ggplot(res_plot, aes(x = W, y = neg_log_q, color = signif, label = taxon)) +
   ) +
   theme_minimal(base_size = 16)
 
-```
-
-
-```{r}
 library(ggplot2)
 
 # Asumsi res_global adalah data.frame hasil ANCOM-BC2 global test
@@ -261,37 +226,24 @@ p1 <- ggplot(res_plot, aes(x = W, y = neg_log_q, color = signif, label = taxon))
 
 print(p1)
 
-```
-
-```{r}
+#save
 ggsave("Globaltest_ancombc2.png", p1, width = 7, height = 7, dpi = 1000)
-```
+-------------------------------------------------------------------------------------------------------------------
 
-
-
-
-
-```{r}
-# ===================================
-# 1. PAIRWISE test (Location sample set)
-# ===================================
+===================================
+# 2. PAIRWISE test (Location sample set)
+===================================
 library(phyloseq)
 library(ANCOMBC)
 library(dplyr)
 library(ggplot2)
-```
 
-```{r}
 sample_data(psseed_origin)
-```
-```{r}
+
 # Subset to baseline
 psori = phyloseq::subset_samples(psseed_origin, Source == "Origin")
 sample_data(psori)
-```
 
-
-```{r}
 # Run ANCOM-BC2 with multiple pairwise comparisons
 out <- ancombc2(
   data = psori,
@@ -313,9 +265,7 @@ out <- ancombc2(
   dunnet = FALSE,
   trend = FALSE
 )
-```
 
-```{r}
 library(dplyr)
 library(tidyr)
 
@@ -345,11 +295,7 @@ res_2vs3 <- res_pair %>%
 sig_res <- bind_rows(res_1vs2, res_2vs3)
 
 print(sig_res)
-
-
-```
-
-```{r}
+-------------------------------------------------------------------------------------------------------------------
 # ===== significant Barplot at genus level =====
 ggplot(sig_res, aes(x = reorder(taxon, lfc), y = lfc, fill = comparison)) +
   geom_col(position = position_dodge()) +
@@ -358,11 +304,7 @@ ggplot(sig_res, aes(x = reorder(taxon, lfc), y = lfc, fill = comparison)) +
   theme_minimal() +
   labs(title = "Significant Genera (|lfc| ≥ 2, q<0.05)",
        x = "Genus", y = "Log Fold Change")
-```
 
-
-
-```{r}
 # Plot 1: NangRong vs LamLukKa
 p1 <- ggplot(res_1vs2, aes(x = reorder(taxon, lfc), y = lfc)) +
   geom_col(fill = "steelblue") +
@@ -381,15 +323,10 @@ p2 <- ggplot(res_2vs3, aes(x = reorder(taxon, lfc), y = lfc)) +
   labs(title = "NangRong vs LahanSai",
        x = "Genus", y = "Log Fold Change")
 
-# Tampilkan dua-duanya
 p1
 p2
+-------------------------------------------------------------------------------------------------------------------
 
-
-```
-#####
-
-```{r}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -451,10 +388,7 @@ fig_tile = df_fig_pair %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 fig_tile
-```
-
-
-```{r}
+-------------------------------------------------------------------------------------------------------------------
 
 ## --- Barplot per perbandingan
 # NangRong vs LahanSai
@@ -468,10 +402,7 @@ barplot1 = res_pair %>%
   labs(title = "NangRong vs LamLukKa", x = "Genus", y = "Log Fold Change")
   
 barplot1
-```
 
-
-```{r}
 # NangRong vs LamLukKa
 barplot2 = res_pair %>%
   filter(diff_LocationNangRong_BuriRam_LocationLamLukKa_PathumThani == 1) %>%
@@ -483,10 +414,7 @@ barplot2 = res_pair %>%
   labs(title = "NangRong vs LamLukKa", x = "Genus", y = "Log Fold Change")
 
 barplot2
-```
 
-
-```{r}
 ## --- Volcano plot per perbandingan
 # NangRong vs LahanSai
 volcano1 = res_pair %>%
@@ -512,23 +440,17 @@ volcano2 = res_pair %>%
 
 volcano2
 
-```
-
-```{r}
 res_pair <- out$res_pair
 
-# 1) Tentukan nama kolom yang ada (otomatis)
 lfc_cols <- grep("^lfc_", names(res_pair), value = TRUE)
 q_cols   <- grep("^q_", names(res_pair), value = TRUE)
 
-# Print kolom lfc/q untuk verifikasi
 message("LF C columns found:\n", paste(lfc_cols, collapse = "\n"))
 message("Q value columns found:\n", paste(q_cols, collapse = "\n"))
 
-# 2) Pemetaan perbandingan yang kita butuhkan (sesuai struktur model)
-# Interpretasi berdasarkan struktur yang kamu laporkan:
-# - lfc_LocationNangRong_BuriRam  => NangRong vs LahanSai (karena LahanSai adalah reference)
-# - lfc_LocationNangRong_BuriRam_LocationLamLukKa_PathumThani => NangRong vs LamLukKa
+
+lfc_LocationNangRong_BuriRam  => NangRong vs LahanSai (karena LahanSai adalah reference)
+lfc_LocationNangRong_BuriRam_LocationLamLukKa_PathumThani => NangRong vs LamLukKa
 
 col_lfc_nang_vs_lahan <- "lfc_LocationNangRong_BuriRam"
 col_q_nang_vs_lahan   <- sub("^lfc_", "q_", col_lfc_nang_vs_lahan)
@@ -536,7 +458,6 @@ col_q_nang_vs_lahan   <- sub("^lfc_", "q_", col_lfc_nang_vs_lahan)
 col_lfc_nang_vs_lam   <- "lfc_LocationNangRong_BuriRam_LocationLamLukKa_PathumThani"
 col_q_nang_vs_lam     <- sub("^lfc_", "q_", col_lfc_nang_vs_lam)
 
-# Pastikan kolom ada
 stopifnot(col_lfc_nang_vs_lahan %in% names(res_pair))
 stopifnot(col_q_nang_vs_lahan %in% names(res_pair))
 stopifnot(col_lfc_nang_vs_lam %in% names(res_pair))
@@ -557,13 +478,10 @@ sig_nang_vs_lam <- res_pair %>%
   arrange(desc(abs(lfc))) %>%
   mutate(comparison = "NangRong vs LamLukKa")
 
-# Gabungkan (opsional)
 sig_all <- bind_rows(sig_nang_vs_lahan, sig_nang_vs_lam)
 
-# Simpan hasil signifikan
 write.csv(sig_all, file = "significant_genera_pairs.csv", row.names = FALSE)
 
-# 4) Buat barplot terpisah (satu plot per perbandingan)
 ## === Barplot NangRong vs LahanSai ===
 if (nrow(sig_nang_vs_lahan) > 0) {
   p_bar1 <- ggplot(sig_nang_vs_lahan,
@@ -603,9 +521,9 @@ if (nrow(sig_nang_vs_lam) > 0) {
          y = "Log Fold Change")
   print(p_bar2)
 }
+-------------------------------------------------------------------------------------------------------------------
 
-# 5) Volcano plot terpisah (tandai signifikan berdasarkan kolom diff_... jika ada, otherwise berdasarkan q)
-# Untuk NangRong vs LahanSai
+# NangRong vs LahanSai
 p_volcano1 <- res_pair %>%
   mutate(x = .data[[col_lfc_nang_vs_lahan]],
          y = -log10(.data[[col_q_nang_vs_lahan]]),
@@ -628,7 +546,7 @@ p_volcano2 <- res_pair %>%
   theme_minimal() +
   labs(title = "Volcano: NangRong vs LamLukKa", x = "Log Fold Change", y = "-log10(q-value)")
 print(p_volcano2)
-```
+-------------------------------------------------------------------------------------------------------------------
 
 >>>BARPLOT
 
@@ -794,3 +712,4 @@ if (nrow(res_lam_vs_lahan) > 0) {
   v_lam_vs_lahan <- plot_volcano(res_lam_vs_lahan, "Volcano: LamLukKa vs LahanSai")
   print(v_lam_vs_lahan)
 }
+
