@@ -1,17 +1,11 @@
 ---
 title: "Taxa distribution"
 author: "Hendra"
-output: html_notebook
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
+#------Venn Diagram_Distribution-----------#
 
-##------Venn Diagram_Distribution-----------##
-
-```{r}
 library(ggplot2)
 library(grid)
 library(ggvenn)
@@ -23,26 +17,20 @@ library(tidyr)
 library(tibble)
 library(phyloseq)
 library(ggplot2)
-```
-
-
+---------------------------------------------------------------------------------------------------
 
 psseed_origin = base::readRDS("D:/S3-KU/Rice seed analysis/Phyloseq/New Phylo/Phyasv-origin.rds")
 sample_data(psseed_origin)
 
-
 otu_table(psseed_origin)
-
 tax_table(psseed_origin)
-
 tax_df <- as.data.frame(tax_table(psseed_origin))
 
 library(openxlsx)
-# Buat file Excel dengan beberapa sheet
+# save
 write.xlsx(tax_df, "taxa_ASVdata.xlsx")
-
-
-##----Sub-set variety sample-based------###
+----------------------------------------------------------------------------------------------------
+##----Sub-set variety sample-based------##
 
 Venpath = paste(otupath,"/Ven_Upset_super/",sep = "")
   dir.create(Venpath)
@@ -51,8 +39,7 @@ group = "Variety"
 path = path
 N = 0.01
 
-  
-  aa =  ggClusterNet::vegan_otu(psseed_origin)
+    aa =  ggClusterNet::vegan_otu(psseed_origin)
   otu_table = as.data.frame(t(aa))
   count = aa
   countA = count
@@ -93,12 +80,12 @@ N = 0.01
   }
   
   print(ven_varietyasv)
-
-
+------------------------------------------------------------------------------------------------------------------
+#shared
 shared_asv = Reduce(intersect, ven_varietyasv)
 print("ASV shared across all varieties:")
 print(shared_asv)
-
+-------------------------------------------------------------------------------------------------------------------
 var_n <- ncol(ven2)
 print(var_n)
 
@@ -117,10 +104,9 @@ ven2[asv_names, ] <- ven2[asv_names, , drop = FALSE] / var_n
 # Calculate relative abundance in percentage
 rel_abundance <- ven2 * 100
 
-
 str(ven_varietyasv)
-
-#VARIETY-Based
+--------------------------------------------------------------------------------------------------------------------------
+--------Variety-Based
 
 # Check if there are exactly two elements in the list
 if (length(names(ven_varietyasv)) == 2) {
@@ -169,13 +155,11 @@ cat("✅ Venn diagram saved:", filename, "\n")
   
 }
 
-
 getwd()
-
 display_venn(ven_varietyasv)
+---------------------------------------------------------------------------------------------------------------------------
 
-
-###------------Taxa Genus-based------------###
+##------------Taxa Genus-based------------##
 
 # Load library
 library(phyloseq)
@@ -211,15 +195,11 @@ table(tax_table(pseed_genus)[, "Genus"])
 
 # Count how many NA values remain in the Genus column (if any)
 sum(is.na(tax_table(pseed_genus)[, "Genus"]))  # How many NA in the Genus level?
-
 head(taxa_names(pseed_genus))
-
 taxa_names(pseed_genus) <- make.unique(as.character(tax_table(pseed_genus)[, "Genus"]))
-
 taxa_names(pseed_genus)
-
 taxa
-
+--------------------------------------------------------------------------------------------------------
 Venpath = paste(otupath,"/Ven_Upset_super/",sep = "")
   dir.create(Venpath)
 
@@ -227,7 +207,6 @@ group = "Variety"
 path = path
 N = 0.01
 
-  
   aa =  ggClusterNet::vegan_otu(pseed_genus)
   otu_table = as.data.frame(t(aa))
   count = aa
@@ -235,7 +214,6 @@ N = 0.01
   
   sub_design <- as.data.frame(phyloseq::sample_data(pseed_genus))
   
-
   # pick_val_num <- rep/2
   count[count > 0] <- 1
   count2 = as.data.frame(count )
@@ -244,9 +222,7 @@ N = 0.01
   
   #-div group
   iris.split <- split(count2,as.factor(aa$Vengroup))
-  #数据分组计算平均值
   iris.apply <- lapply(iris.split,function(x)colSums(x[]))
-  # 组合结果
   iris.combine <- do.call(rbind,iris.apply)
   ven2 = t(iris.combine)
   for (i in 1:length(unique(phyloseq::sample_data(pseed_genus)[,"Variety"]))) {
@@ -257,27 +233,21 @@ N = 0.01
   ven2[ven2 < N]  = 0
   ven2[ven2 >=N]  = 1
   ven2 = as.data.frame(ven2)
-  #
   ven_variety = as.list(ven2)
-  
-  # ven_pick = get.venn.partitions(ven3)
+    # ven_pick = get.venn.partitions(ven3)
   
   for (i in 1:ncol(ven2)) {
-    
-    
     ven_variety[[i]] <-  row.names(ven2[ven2[i] == 1,])
-    
-  }
+      }
   
   print(ven_variety)
-
+----------------------------------------------------------------------------------------------------
 library(openxlsx)
-# Buat file Excel dengan beberapa sheet
-write.xlsx(ven_compartment, "Unik_Genus.xlsx")
-
+# save
+write.xlsx(ven_compartment, "Unique_Genus.xlsx")
 str(ven_variety)
-
-#VARIETY VISUALIZATION
+---------------------------------------------------------------------------------------------------
+##------------Vairiety visualization---------##V
 
 if (length(names(ven_variety)) == 2) {
   filename <- "ven_varietybased1.jpg"
@@ -319,8 +289,7 @@ jpeg(
     dev.off()
 
 }
-
-
+-----------------------------------------------------------------------------------------------------
 ##----Visualization each location----##
 
 if (length(names(ven_seed)) == 4) {
@@ -367,5 +336,4 @@ jpeg(
 ggsave("Venn_seed2.png", plot = p, width = 8, height = 6, dpi = 800)
 
 display_venn(ven_seed)
-
-## R Markdown
+----------------------------------------------------------------------------------------------------------------------------------------
