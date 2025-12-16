@@ -204,7 +204,7 @@ ggplot(res_plot, aes(x = W, y = neg_log_q, color = signif, label = taxon)) +
 
 library(ggplot2)
 
-# Asumsi res_global adalah data.frame hasil ANCOM-BC2 global test
+# res_global = ANCOM-BC2 global test
 res_plot <- res_global %>%
   dplyr::mutate(
     neg_log_q = -log10(q_val),
@@ -464,7 +464,7 @@ stopifnot(col_q_nang_vs_lahan %in% names(res_pair))
 stopifnot(col_lfc_nang_vs_lam %in% names(res_pair))
 stopifnot(col_q_nang_vs_lam %in% names(res_pair))
 
-# 3) Ekstrak tabel dengan threshold q < 0.05 dan |lfc| >= 2
+# 3) threshold q < 0.05 dan |lfc| >= 2
 sig_nang_vs_lahan <- res_pair %>%
   select(taxon, lfc = all_of(col_lfc_nang_vs_lahan), q = all_of(col_q_nang_vs_lahan),
          diff = starts_with("diff_") ) %>%   # optional: ambil kolom diff_ kalau ada
@@ -536,7 +536,7 @@ p_volcano1 <- res_pair %>%
   labs(title = "Volcano: NangRong vs LahanSai", x = "Log Fold Change", y = "-log10(q-value)")
 print(p_volcano1)
 
-# Untuk NangRong vs LamLukKa
+# NangRong vs LamLukKa
 p_volcano2 <- res_pair %>%
   mutate(x = .data[[col_lfc_nang_vs_lam]],
          y = -log10(.data[[col_q_nang_vs_lam]]),
@@ -666,45 +666,3 @@ if (nrow(res_lam_vs_lahan) > 0) {
 ggsave("pairtest_ancombc2_nangrong-lahansai.png", p_nang_vs_lahan, width = 6, height = 4, dpi = 1000)
 ggsave("pairtest_ancombc2_nangrong-lamlukka.png", p_nang_vs_lam, width = 6, height = 5, dpi = 1000)
 -------------------------------------------------------------------------------------------------------------------
-#--------Volcano Plot ------#
-
-library(dplyr)
-library(ggplot2)
-library(ggrepel)
-
-# === Volcano Plots ===
-
-plot_volcano <- function(df, title) {
-  ggplot(df, aes(x = lfc, y = -log10(q), color = lfc > 0, label = taxon_clean)) +
-    geom_point(size = 3, alpha = 0.8) +
-    geom_text_repel(size = 4, color = "black", max.overlaps = 20) +
-    scale_color_manual(values = c("TRUE" = "#D55E00",   # merah colorblind-friendly
-                                  "FALSE" = "#0072B2"), # biru colorblind-friendly
-                       labels = c("Depleted", "Enriched"),
-                       name = "Status") +
-    theme_minimal(base_size = 12) +
-    labs(title = title, x = "Log Fold Change", y = "-log10(q-value)") +
-    theme(plot.title = element_text(hjust = 0.5))
-}
-
-## === NangRong vs LahanSai ===
-if (nrow(res_nang_vs_lahan) > 0) {
-  v_nang_vs_lahan <- plot_volcano(res_nang_vs_lahan, "Volcano: NangRong vs LahanSai")
-  print(v_nang_vs_lahan)
-}
-
-## === NangRong vs LamLukKa ===
-if (nrow(res_nang_vs_lam) > 0) {
-  v_nang_vs_lam <- plot_volcano(res_nang_vs_lam, "Volcano: NangRong vs LamLukKa")
-  print(v_nang_vs_lam)
-}
-
-## === LamLukKa vs LahanSai ===
-if (nrow(res_lam_vs_lahan) > 0) {
-  v_lam_vs_lahan <- plot_volcano(res_lam_vs_lahan, "Volcano: LamLukKa vs LahanSai")
-  print(v_lam_vs_lahan)
-}
--------------------------------------------------------------------------------------------------------------------
-
-
-
