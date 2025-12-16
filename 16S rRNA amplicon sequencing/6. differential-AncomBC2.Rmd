@@ -4,7 +4,8 @@ author: "Hendra"
 ---
 
 Reference:
-The R script used in this study was adapted from Lin (2024) with minor modifications, as provided in the ANCOMBC Bioconductor package documentation (https://www.bioconductor.org/packages/release/bioc/html/ANCOMBC. DOI: 10.18129/B9.bioc.ANCOMBC).
+The R script used in this study was adapted from Lin (2024) with minor modifications, as provided in the ANCOMBC Bioconductor package documentation 
+(https://www.bioconductor.org/packages/release/bioc/html/ANCOMBC. DOI: 10.18129/B9.bioc.ANCOMBC).
 
 -----------------------------------------------------------------------------------------------------------------
 library(BiocManager)
@@ -704,4 +705,5 @@ if (nrow(res_lam_vs_lahan) > 0) {
   print(v_lam_vs_lahan)
 }
 -------------------------------------------------------------------------------------------------------------------
+
 
