@@ -3,6 +3,10 @@ title: "ANCOM"
 author: "Hendra"
 ---
 
+Reference:
+The R script used in this study was adapted from Lin (2024) with minor modifications, as provided in the ANCOMBC Bioconductor package documentation (https://www.bioconductor.org/packages/release/bioc/html/ANCOMBC. DOI: 10.18129/B9.bioc.ANCOMBC).
+
+-----------------------------------------------------------------------------------------------------------------
 library(BiocManager)
 library(phyloseq)
 library(ANCOMBC)
@@ -15,20 +19,17 @@ sample_data(psseed_origin)
 # Subset to baseline
 pseq = phyloseq::subset_samples(psseed_origin, Source == "Origin")
 
-# Re-code the bmi group
+# Re-code the location group
 meta_data = microbiome::meta(pseq)
 meta_data$Location = recode(meta_data$Location,
                        obese = "LamLukKa_PathumThani",
                        severeobese = "LamLukKa_PathumThani",
                        morbidobese = "LamLukKa_PathumThani")
 
-# Note that by default, levels of a categorical variable in R are sorted 
-# alphabetically. In this case, the reference level for `bmi` will be 
-# `lean`. To manually change the reference level, for instance, setting `obese`
 # as the reference level, use:
 meta_data$Location = factor(meta_data$Location, levels = c("NangRong_BuriRam", "LahanSai_BuriRam", "LamLukKa_PathumThani"))
 # You can verify the change by checking:
-# levels(meta_data$bmi)
+# levels(meta_data$Location)
 
 colnames(meta_data)
 
@@ -72,7 +73,6 @@ ps_high <- prune_taxa(high_abund_taxa, ps)
 
 pseq_perm = ps_high
 meta_data_perm = microbiome::meta(pseq_perm)
-meta_data_perm$bmi = sample(meta_data_perm$bmi)
 
 phyloseq::sample_data(pseq_perm) = meta_data_perm
 
@@ -704,3 +704,4 @@ if (nrow(res_lam_vs_lahan) > 0) {
   print(v_lam_vs_lahan)
 }
 -------------------------------------------------------------------------------------------------------------------
+
