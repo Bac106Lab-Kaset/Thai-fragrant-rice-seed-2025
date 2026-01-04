@@ -4,8 +4,8 @@ author: "Hendra"
 ---
 
 Reference:
-The R script used in this study was adapted from Lin (2024) with minor modifications, as provided in the ANCOMBC Bioconductor package documentation 
-(https://www.bioconductor.org/packages/release/bioc/html/ANCOMBC. DOI: 10.18129/B9.bioc.ANCOMBC).
+The code and workflow used in this study were adapted from Lin (2024) with minor modifications, as cited in the references and described in the ANCOMBC Bioconductor package documentation (https://www.bioconductor.org/packages/release/bioc/html/ANCOMBC
+; DOI: 10.18129/B9.bioc.ANCOMBC).
 
 -----------------------------------------------------------------------------------------------------------------
 library(BiocManager)
@@ -304,7 +304,7 @@ ggplot(sig_res, aes(x = reorder(taxon, lfc), y = lfc, fill = comparison)) +
   coord_flip() +
   theme_minimal() +
   labs(title = "Significant Genera (|lfc| ≥ 2, q<0.05)",
-       x = "Genus", y = "Log Fold Change")
+       x = "Genus", y = "Log2 Fold Change")
 
 # Plot 1: NangRong vs LamLukKa
 p1 <- ggplot(res_1vs2, aes(x = reorder(taxon, lfc), y = lfc)) +
@@ -313,7 +313,7 @@ p1 <- ggplot(res_1vs2, aes(x = reorder(taxon, lfc), y = lfc)) +
   coord_flip() +
   theme_minimal() +
   labs(title = "NangRong vs LamLukKa",
-       x = "Genus", y = "Log Fold Change")
+       x = "Genus", y = "Log2 Fold Change")
 
 # Plot 2: NangRong vs LahanSai
 p2 <- ggplot(res_2vs3, aes(x = reorder(taxon, lfc), y = lfc)) +
@@ -322,7 +322,7 @@ p2 <- ggplot(res_2vs3, aes(x = reorder(taxon, lfc), y = lfc)) +
   coord_flip() +
   theme_minimal() +
   labs(title = "NangRong vs LahanSai",
-       x = "Genus", y = "Log Fold Change")
+       x = "Genus", y = "Log2 Fold Change")
 
 p1
 p2
@@ -400,7 +400,7 @@ barplot1 = res_pair %>%
     geom_col(fill = "blue") +
   coord_flip() +
   theme_minimal() +
-  labs(title = "NangRong vs LamLukKa", x = "Genus", y = "Log Fold Change")
+  labs(title = "NangRong vs LamLukKa", x = "Genus", y = "Log2 Fold Change")
   
 barplot1
 
@@ -412,7 +412,7 @@ barplot2 = res_pair %>%
   geom_col(fill = "tomato") +
   coord_flip() +
   theme_minimal() +
-  labs(title = "NangRong vs LamLukKa", x = "Genus", y = "Log Fold Change")
+  labs(title = "NangRong vs LamLukKa", x = "Genus", y = "Log2 Fold Change")
 
 barplot2
 
@@ -425,7 +425,7 @@ volcano1 = res_pair %>%
   scale_color_manual(values = c("FALSE"="grey", "TRUE"="red")) +
   theme_minimal() +
   labs(title = "Volcano Plot: NangRong vs LahanSai",
-       x = "Log Fold Change", y = "-log10(q-value)")
+       x = "Log2 Fold Change", y = "-log10(q-value)")
 
 volcano1
 
@@ -437,7 +437,7 @@ volcano2 = res_pair %>%
   scale_color_manual(values = c("FALSE"="grey", "TRUE"="red")) +
   theme_minimal() +
   labs(title = "Volcano Plot: NangRong vs LamLukKa",
-       x = "Log Fold Change", y = "-log10(q-value)")
+       x = "Log2 Fold Change", y = "-log10(q-value)")
 
 volcano2
 
@@ -499,7 +499,7 @@ if (nrow(sig_nang_vs_lahan) > 0) {
     theme_minimal(base_size = 12) +
     labs(title = "NangRong vs LahanSai",
          x = "Genus",
-         y = "Log Fold Change")
+         y = "Log2 Fold Change")
   print(p_bar1)
 }
 
@@ -533,7 +533,7 @@ p_volcano1 <- res_pair %>%
   geom_point() +
   scale_color_manual(values = c("FALSE" = "grey50", "TRUE" = "red")) +
   theme_minimal() +
-  labs(title = "Volcano: NangRong vs LahanSai", x = "Log Fold Change", y = "-log10(q-value)")
+  labs(title = "Volcano: NangRong vs LahanSai", x = "Log2 Fold Change", y = "-log10(q-value)")
 print(p_volcano1)
 
 # NangRong vs LamLukKa
@@ -545,7 +545,7 @@ p_volcano2 <- res_pair %>%
   geom_point() +
   scale_color_manual(values = c("FALSE" = "grey50", "TRUE" = "red")) +
   theme_minimal() +
-  labs(title = "Volcano: NangRong vs LamLukKa", x = "Log Fold Change", y = "-log10(q-value)")
+  labs(title = "Volcano: NangRong vs LamLukKa", x = "Log2 Fold Change", y = "-log10(q-value)")
 print(p_volcano2)
 -------------------------------------------------------------------------------------------------------------------
 
@@ -589,7 +589,7 @@ if (nrow(res_nang_vs_lahan) > 0) {
     theme_minimal(base_size = 12) +
     scale_x_discrete(labels = parse(text = levels(reorder(res_nang_vs_lahan$taxon_clean,
                                                           res_nang_vs_lahan$lfc)))) +
-    labs(title = "NangRong vs LahanSai", x = "Genus", y = "Log Fold Change") +
+    labs(title = "NangRong vs LahanSai", x = "Genus", y = "Log2 Fold Change") +
      theme(
   axis.title.x = element_text(face = "bold", size = 12),  # Log Fold Change
   axis.title.y = element_text(face = "bold", color = "black", size = 12)   # Genus
@@ -622,7 +622,7 @@ if (nrow(res_nang_vs_lam) > 0) {
     theme_minimal(base_size = 12) +
     scale_x_discrete(labels = parse(text = levels(reorder(res_nang_vs_lam$taxon_clean,
                                                           res_nang_vs_lam$lfc)))) +
-    labs(title = "NangRong vs LamLukKa", x = "Genus", y = "Log Fold Change") +
+    labs(title = "NangRong vs LamLukKa", x = "Genus", y = "Log2 Fold Change") +
      theme(
   axis.title.x = element_text(face = "bold", size = 12),  # Log Fold Change
   axis.title.y = element_text(face = "bold", color = "black", size = 12)   # Genus
@@ -655,9 +655,9 @@ if (nrow(res_lam_vs_lahan) > 0) {
     theme_minimal(base_size = 12) +
     scale_x_discrete(labels = parse(text = levels(reorder(res_lam_vs_lahan$taxon_clean,
                                                           res_lam_vs_lahan$lfc)))) +
-    labs(title = "LamLukKa vs LahanSai", x = "Genus", y = "Log Fold Change") +
+    labs(title = "LamLukKa vs LahanSai", x = "Genus", y = "Log2 Fold Change") +
      theme(
-  axis.title.x = element_text(face = "bold", size = 12),  # Log Fold Change
+  axis.title.x = element_text(face = "bold", size = 12),  # Log2 Fold Change
   axis.title.y = element_text(face = "bold", size = 12)   # Genus
 )
   print(p_lam_vs_lahan)
