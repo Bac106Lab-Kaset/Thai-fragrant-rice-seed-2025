@@ -666,3 +666,4 @@ if (nrow(res_lam_vs_lahan) > 0) {
 ggsave("pairtest_ancombc2_nangrong-lahansai.png", p_nang_vs_lahan, width = 6, height = 4, dpi = 1000)
 ggsave("pairtest_ancombc2_nangrong-lamlukka.png", p_nang_vs_lam, width = 6, height = 5, dpi = 1000)
 -------------------------------------------------------------------------------------------------------------------
+
